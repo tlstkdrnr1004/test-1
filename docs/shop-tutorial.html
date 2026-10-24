@@ -250,6 +250,7 @@ footer.end { font-size: 14px; color: var(--muted); margin-top: 28px; }
 </table>
 <div class="tip"><b>IntelliJ 안에서 명령 창(터미널) 여는 법</b> 아래쪽 막대의 <b>Terminal</b> 을 누르거나 <kbd>Alt</kbd>+<kbd>F12</kbd> 를 누릅니다. 이 자습서의 명령은 여기에 붙여 넣고 <kbd>Enter</kbd> 를 누르면 됩니다.</div>
 <div class="tip">Docker Desktop 설치가 어렵다면 아래 1-3 의 <b>방법 B(MySQL 설치판)</b>을 쓰면 됩니다.</div>
+<div class="tip"><b>IntelliJ 버전 기준</b> 이 자습서의 메뉴 이름은 <b>IntelliJ IDEA 2026.2.3 (빌드 262.10968.63)</b> 기준입니다. 설치한 버전이 다르면 메뉴 위치가 조금 다를 수 있으니, 같은 이름의 메뉴를 검색 기능(<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd>, 기능 찾기)으로 찾으세요.</div>
 
 <h3>1-1. JDK 25 설치</h3>
 <ol class="steps">
@@ -343,7 +344,7 @@ git config --global init.defaultBranch main</pre></div>
 
 <h3>3-5. Git 연결 확인</h3>
 <ol class="steps">
-<li>설정 창에서 <b>Version Control → Git</b> 으로 이동합니다. <b>Path to Git executable</b> 이 <code>git</code> 또는 Git 설치 경로로 보이면 됩니다. 옆의 <b>Test</b> 버튼을 누르면 <code>Git executable … is valid</code> 가 보입니다.</li>
+<li>설정 창에서 <b>Version Control → Git</b> 으로 이동합니다. Git 실행 파일 경로 칸이 (이름은 버전마다 조금 다를 수 있습니다) <code>git</code> 또는 Git 설치 경로로 보이면 됩니다. 옆의 <b>Test</b> 버튼을 누르면 <code>Git executable … is valid</code> 가 보입니다.</li>
 </ol>
 
 <div class="tip">설정 창을 닫기 전에 <b>Apply</b> → <b>OK</b> 를 누르세요. 그래야 저장됩니다.</div>
@@ -660,7 +661,7 @@ gradlew.bat test
 
 <h3>9-1. ① 클론 (Clone) · 팀원이 각자 한 번만</h3>
 <ol class="steps">
-<li>IntelliJ 시작 화면에서 <b>Get from VCS</b> (메뉴: <b>File → New → Project from Version Control</b>) 를 누릅니다.</li>
+<li>IntelliJ 시작 화면에서 <b>Get from Version Control</b> (메뉴: <b>File → New → Project from Version Control</b>) 를 누릅니다.</li>
 <li><b>URL</b> 에 팀장이 만든 저장소 주소(<code>https://github.com/팀장아이디/shop-team.git</code>)를 넣고, <b>Directory</b> 에 저장할 폴더를 고른 뒤 <b>Clone</b> 을 누릅니다.</li>
 <li>GitHub 로그인 창이 뜨면 본인 계정으로 로그인합니다. (비밀번호 대신 브라우저 인증 방식을 쓰는 것이 편합니다)</li>
 <li>Trust Project → Gradle 가져오기가 끝날 때까지 기다립니다. 3장의 설정(JDK 25, UTF-8)이 적용되어 있는지 다시 봅니다.</li>
@@ -776,7 +777,7 @@ gradlew.bat test
 <ol class="steps">
 <li>IntelliJ 에서 브랜치를 <code>feature/footer-year</code> 로 바꿉니다.</li>
 <li>Update Project(<kbd>Ctrl</kbd>+<kbd>T</kbd>)로 원격 최신 상태를 받습니다.</li>
-<li>메뉴 <b>Git → Merge…</b> (또는 브랜치 이름 우클릭 → <b>Merge Into Current</b>)에서 <b>main</b> 을 골라 현재 브랜치에 합칩니다.</li>
+<li>오른쪽 아래의 현재 브랜치 이름(<code>feature/footer-year</code>)을 누르고, 목록에서 <b>main</b> 을 고른 뒤 <b>Merge into Current</b> 를 누릅니다. (또는 <b>Git</b> 메뉴에서 같은 이름의 항목을 찾습니다)</li>
 <li>충돌이 나면 <b>Merge Conflicts</b> 창이 뜹니다. 파일 <code>footer.html</code> 을 골라 <b>Merge…</b> 를 누릅니다.</li>
 <li>세 칸짜리 병합 창이 열립니다. 왼쪽은 내 변경(2025), 오른쪽은 main 의 변경(팀 A), 가운데는 결과입니다. 가운데 줄에 <b>두 변경을 모두 담은 한 줄</b>을 직접 씁니다.</li>
 </ol>
@@ -1075,7 +1076,7 @@ dependencies {
 <h2><span class="no">14</span>오류 해결 <small>증상 → 원인 → 해결</small></h2>
 <table class="compare">
 <tr><th>증상 (화면·로그)</th><th>원인</th><th>해결</th></tr>
-<tr><td><code>cannot find symbol: method getId()</code> (Lombok 메서드가 안 보임)</td><td>어노테이션 처리가 꺼져 있음</td><td>3-4 를 확인하고, <b>Build → Rebuild Project</b> 후 Gradle 탭에서 <b>Reload All Gradle Projects</b></td></tr>
+<tr><td><code>cannot find symbol: method getId()</code> (Lombok 메서드가 안 보임)</td><td>어노테이션 처리가 꺼져 있음</td><td>3-4 를 확인하고, <b>Build → Rebuild Project</b> 후 Gradle 탭에서 Gradle 탭 맨 위의 새로고침(⟳) 아이콘</td></tr>
 <tr><td><code>QItem</code>, <code>QMainItemDto</code> 를 찾을 수 없음</td><td>Q 클래스가 아직 생성되지 않음 (Gradle 가 annotationProcessor 를 실행하지 않음)</td><td>Gradle 탭에서 <b>build</b> 한 번 실행 → <code>build/generated/sources/annotationProcessor/java/main</code> 확인 → IntelliJ 재시작</td></tr>
 <tr><td>한글 주석·문자열이 <code>???</code> 또는 깨짐</td><td>인코딩이 UTF-8 이 아님</td><td>3-3 설정 확인 후 파일을 다시 열기. Windows 명령 창은 <code>chcp 65001</code></td></tr>
 <tr><td><code>Communications link failure</code> (DB 연결 실패)</td><td>MySQL 이 꺼져 있거나 3306 포트가 다름</td><td>Docker 면 <code>docker start shop-mysql</code>. 설치판이면 MySQL 서비스 시작. 비밀번호가 0000 인지 확인</td></tr>
