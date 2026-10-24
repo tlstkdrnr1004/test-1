@@ -1,15 +1,15 @@
 // [shop · Maven → Gradle 전환] build.gradle : 프로젝트 설정 파일입니다. (기존 pom.xml 을 대신합니다)
 // pom.xml 의 <dependency> 하나하나가 아래 dependencies 블록의 한 줄과 1:1 로 대응합니다.
-// pom.xml 의 <parent> (spring-boot-starter-parent 3.3.2) 는 아래 plugins 의 org.springframework.boot 버전 4.0.1 이 대신합니다. (Spring Boot 4 로 올렸습니다)
+// pom.xml 의 <parent> (spring-boot-starter-parent 3.3.2) 는 아래 plugins 의 org.springframework.boot 버전 3.3.2 가 대신합니다.
 // 실행 방법: Windows 는 gradlew.bat, Linux/WSL 은 ./gradlew  (예: ./gradlew bootRun, ./gradlew test)
 
 plugins {
     // java : 자바 코드를 컴파일하고 테스트(test 작업)를 실행하는 기본 기능
     id 'java'
     // org.springframework.boot : 실행 가능한 jar 를 만들고(bootJar), 개발 서버를 켜는(bootRun) 스프링 부트 플러그인
-    id 'org.springframework.boot' version '4.0.1'
+    id 'org.springframework.boot' version '3.3.2'
     // io.spring.dependency-management : 라이브러리 버전 목록표를 적용해서, 버전을 일일이 안 써도 되게 합니다 (Maven 의 부모 pom 역할)
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'com.shop'
@@ -29,6 +29,10 @@ java {
 // 이 줄이 없으면 Windows 기본 인코딩(MS949)으로 읽어서 한글 주석과 한글 문자열이 깨질 수 있습니다.
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    // [JDK 25 · 중요] 컴파일러는 JDK 25 를 쓰지만, 만들어지는 클래스 파일 버전은 21 로 맞춥니다.
+    // Spring Boot 3.3.2 의 내부 도구(ASM)는 자바 25 클래스 파일을 읽지 못해 "Incompatible class format" 오류가 납니다.
+    // 자바 25 바이트코드 자체가 필요하면 Spring Boot 4.x 로 올려야 합니다 (자습서 13장 3-E).
+    options.release = 21
 }
 
 repositories {
@@ -76,8 +80,8 @@ dependencies {
 
     // [보안] spring-boot-starter-security : 로그인, 권한(인가) 기능. 이 줄을 추가하면 모든 요청 URL 에 인증이 필요해집니다 (pom: spring-boot-starter-security)
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    // [화면 · 보안] thymeleaf-extras-springsecurity6 : 화면(HTML)에서 로그인 상태와 권한을 확인하게 해 줍니다. 버전은 Spring Boot 4 가 관리하는 값을 씁니다.
-    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    // [화면 · 보안] thymeleaf-extras-springsecurity6 : 화면(HTML)에서 로그인 상태와 권한을 확인하게 해 줍니다. Spring Security 6 용 버전입니다.
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.1.RELEASE'
     // [보안 · 테스트] spring-security-test : 화면 없이 Spring Security 를 테스트하게 해 줍니다 (@WithMockUser 등)
     testImplementation 'org.springframework.security:spring-security-test'
 
@@ -95,9 +99,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // [테스트] spring-boot-starter-test : JUnit, AssertJ, Mockito 등 테스트 도구 묶음 (pom: spring-boot-starter-test, scope test)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    // [테스트 · Spring Boot 4] MockMvc(웹 계층 테스트)와 JPA 테스트 기능은 Boot 4 에서 별도 스타터로 나뉘었습니다. (책 build.gradle 과 같은 줄)
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 }
 
 tasks.named('test') {
