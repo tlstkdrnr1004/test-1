@@ -198,6 +198,29 @@ footer.end { font-size: 14px; color: var(--muted); margin-top: 28px; }
 <h3>자습서 지도 (이 순서대로 하세요)</h3>
 <div class="route"><span>1 준비물</span><i>→</i><span>2 MySQL</span><i>→</i><span>3 IntelliJ 설정</span><i>→</i><span>4 프로젝트 열기 (팀장)</span><i>→</i><span>5 실행·테스트</span><i>→</i><span>6 GitHub 저장소 (팀장)</span><i>→</i><span>7 첫 푸시</span><i>→</i><span>8 GitHub Actions</span><i>→</i><span>9 팀원 협업</span><i>→</i><span>10 충돌 해결</span><i>→</i><span>11 요청 흐름 애니메이션</span><i>→</i><span>12 기능 확인</span><i>→</i><span>13 심화 기술</span><i>→</i><span>14 오류 해결</span><i>→</i><span>15 최종 점검</span></div>
 
+<h3>먼저 알아 둘 용어 (비전공자용)</h3>
+<table class="compare">
+<tr><th>용어</th><th>쉽게 말하면</th></tr>
+<tr><td>IntelliJ</td><td>자바 코드를 쓰고 실행하는 프로그램입니다. 메모장에 여러 도구가 붙은 것이라고 생각하면 됩니다.</td></tr>
+<tr><td>JDK</td><td>자바를 실행하는 데 필요한 도구 모음입니다. 이 자습서는 <b>25 버전</b>을 씁니다.</td></tr>
+<tr><td>Spring Boot</td><td>웹 사이트(쇼핑몰)를 빨리 만들 수 있게 해 주는 자바 뼈대입니다.</td></tr>
+<tr><td>JPA</td><td>자바 클래스를 데이터베이스 표(테이블)에 자동으로 저장하고 불러오는 기능입니다. SQL 을 직접 거의 쓰지 않습니다.</td></tr>
+<tr><td>Thymeleaf</td><td>HTML 화면 파일 안에 데이터를 넣어서 보여 주는 기능입니다.</td></tr>
+<tr><td>Gradle</td><td>프로젝트를 컴파일하고 테스트하고 실행하는 도구입니다. 명령은 <code>gradlew</code> 로 시작합니다.</td></tr>
+<tr><td>MySQL</td><td>데이터를 저장하는 데이터베이스 프로그램입니다.</td></tr>
+<tr><td>Git</td><td>코드를 언제 어떻게 바꿨는지 기록을 관리하는 도구입니다.</td></tr>
+<tr><td>GitHub</td><td>Git 기록을 인터넷에 올려서 팀과 함께 보는 사이트입니다.</td></tr>
+<tr><td>커밋(Commit)</td><td>"지금까지 바꾼 내용을 기록으로 남김"입니다. 내 PC 안에서만 일어납니다.</td></tr>
+<tr><td>푸시(Push)</td><td>내 PC 의 기록을 GitHub 에 올립니다.</td></tr>
+<tr><td>브랜치(Branch)</td><td>나만의 작업 공간입니다. 팀원끼리 서로의 작업을 방해하지 않게 나눕니다.</td></tr>
+<tr><td>Pull Request(PR)</td><td>"제 작업을 main 에 합쳐 주세요"라는 요청서입니다. 팀장이 확인하고 합칩니다.</td></tr>
+<tr><td>GitHub Actions</td><td>코드를 올리면 GitHub 가 자동으로 테스트해 주고, 결과를 ✔(성공) 또는 ✘(실패)로 보여 줍니다.</td></tr>
+</table>
+
+<div class="why"><b>예상 소요 시간</b> 설치 1~2시간 · 실행과 테스트 30분 · 팀 협업 실습 2~3시간. 인터넷 연결이 필요합니다. 처음 Gradle 을 실행하면 라이브러리를 내려받느라 5~10분 걸릴 수 있습니다. 중간에 멈추면 기록이 남으니 다음 날 이어서 해도 됩니다.</div>
+
+<div class="warn"><b>혼자 해도 됩니다.</b> 팀장 장(4~8장)을 먼저 끝내면 프로젝트 실행과 자동 테스트까지 완성됩니다. 팀원 장(9~10장)은 GitHub 계정을 하나 더 만들어서 번갈아 실행하거나, 한 사람이 팀원 A·B·C 역할을 차례로 해 봐도 됩니다.</div>
+
 <h3>미션 체크 (시작 전 확인)</h3>
 <label class="do"><input type="checkbox" data-mission="s0-1"><span class="do-text">위 완성 기준 6가지를 읽었습니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s0-2"><span class="do-text">팀장 1명, 팀원 3명의 GitHub 계정(무료)을 준비했습니다. 팀원은 팀장에게 <b>GitHub 아이디</b>를 알려 줍니다.</span></label>
@@ -215,6 +238,18 @@ footer.end { font-size: 14px; color: var(--muted); margin-top: 28px; }
 <tr><td>MySQL</td><td>8.0 (Docker 또는 설치판)</td><td><code>mysql --version</code> 또는 Docker Desktop</td></tr>
 <tr><td>GitHub 계정</td><td>무료 계정</td><td>github.com 로그인</td></tr>
 </table>
+
+<h3>1-0. 설치할 프로그램과 받는 곳</h3>
+<table class="compare">
+<tr><th>프로그램</th><th>받는 곳</th><th>설치할 때</th></tr>
+<tr><td>JDK 25 (Amazon Corretto 25)</td><td>https://aws.amazon.com/corretto/ → Windows x64 용 <b>MSI</b> 파일</td><td>기본값으로 계속 Next</td></tr>
+<tr><td>IntelliJ IDEA</td><td>https://www.jetbrains.com/idea/download/</td><td><b>Community Edition</b>(무료)</td></tr>
+<tr><td>Git</td><td>https://git-scm.com/downloads → Windows</td><td>옵션은 모두 기본값</td></tr>
+<tr><td>Docker Desktop</td><td>https://www.docker.com/products/docker-desktop/</td><td>설치 후 실행해 두고, 아래쪽 고래 아이콘이 안정될 때까지 기다림</td></tr>
+<tr><td>GitHub 계정</td><td>https://github.com/signup</td><td>무료 계정. 이메일 인증까지 끝내기</td></tr>
+</table>
+<div class="tip"><b>IntelliJ 안에서 명령 창(터미널) 여는 법</b> 아래쪽 막대의 <b>Terminal</b> 을 누르거나 <kbd>Alt</kbd>+<kbd>F12</kbd> 를 누릅니다. 이 자습서의 명령은 여기에 붙여 넣고 <kbd>Enter</kbd> 를 누르면 됩니다.</div>
+<div class="tip">Docker Desktop 설치가 어렵다면 아래 1-3 의 <b>방법 B(MySQL 설치판)</b>을 쓰면 됩니다.</div>
 
 <h3>1-1. JDK 25 설치</h3>
 <ol class="steps">
@@ -238,7 +273,7 @@ git config --global init.defaultBranch main</pre></div>
 <div class="card"><h4>방법 A · Docker (권장)</h4><p>Docker Desktop 을 켠 뒤 아래 명령 한 줄. 비밀번호는 <code>0000</code>, DB 이름은 <code>shop</code> 입니다. 프로젝트 설정 파일과 맞춰져 있습니다.</p></div>
 <div class="card"><h4>방법 B · 설치판</h4><p>MySQL Installer 로 MySQL 8.0 Server 를 설치하고, root 비밀번호를 <code>0000</code> 으로 정합니다. 설치 후 2단계의 SQL 을 실행합니다.</p></div>
 </div>
-<div class="codebox"><div class="bar"><span class="fname">명령 프롬프트 (방법 A)</span><button class="copy">복사</button></div><pre>docker run -d --name shop-mysql -e MYSQL_ROOT_PASSWORD=0000 -e MYSQL_DATABASE=shop -p 3306:3306 mysql:8.0</pre></div>
+<div class="codebox"><div class="bar"><span class="fname">IntelliJ 터미널 또는 명령 프롬프트 (방법 A)</span><button class="copy">복사</button></div><pre>docker run -d --name shop-mysql -e MYSQL_ROOT_PASSWORD=0000 -e MYSQL_DATABASE=shop -p 3306:3306 mysql:8.0</pre></div>
 
 <h3>미션 체크</h3>
 <label class="do"><input type="checkbox" data-mission="s1-1"><span class="do-text"><code>java -version</code> 에서 25 가 보입니다.</span></label>
@@ -342,6 +377,13 @@ git config --global init.defaultBranch main</pre></div>
 <li>풀린 폴더 안에 <code>build.gradle</code>, <code>settings.gradle</code>, <code>gradlew</code>, <code>gradlew.bat</code>, <code>gradle/wrapper</code>, <code>src</code>, <code>item</code>, <code>docs</code>, <code>.github</code> 가 있는지 확인합니다. <code>pom.xml</code>, <code>mvnw</code>, <code>.mvn</code> 이 있다면 Maven 파일이 남은 것이니 지워도 됩니다.</li>
 </ol>
 
+<h3>4-1-b. 압축 풀기와 폴더 위치 (처음 하는 분 필독)</h3>
+<ol class="steps">
+<li>shop.zip 을 마우스 오른쪽 클릭 → <b>모두 추출</b>(또는 <b>압축 풀기</b>)를 누릅니다.</li>
+<li>풀 위치는 <b>한글이나 공백이 없는 곳</b>이 안전합니다. 예: <code>C:\work\shop</code></li>
+<li>폴더를 열었을 때 바로 <code>build.gradle</code> 파일이 보여야 합니다. 같은 이름의 <code>shop</code> 폴더가 한 번 더 있으면 그 <b>안쪽</b> 폴더를 IntelliJ 로 엽니다.</li>
+</ol>
+
 <h3>4-2. Maven → Gradle 대응표</h3>
 <table class="compare">
 <tr><th>Maven (pom.xml, 원본)</th><th>Gradle (build.gradle, 전환 후)</th><th>뜻</th></tr>
@@ -411,6 +453,7 @@ gradlew.bat test
 
 # macOS / Linux / WSL
 ./gradlew test</pre></div>
+<div class="tip">IntelliJ 오른쪽 가장자리의 <b>Gradle</b> 탭(코끼리 모양 아이콘)을 찾으세요. 처음에는 Gradle 이 라이브러리를 내려받느라 한참 걸리고, <code>Downloading https://…</code> 같은 줄이 계속 나오는 것은 정상입니다. 마지막에 <code>BUILD SUCCESSFUL</code> 이 보이면 성공, <code>BUILD FAILED</code> 가 보이면 14장을 봅니다.</div>
 <p class="caption">결과 보고서는 <code>build/reports/tests/test/index.html</code> 을 브라우저로 열면 볼 수 있습니다. 통과한 테스트는 초록색입니다.</p>
 
 <h3>5-2. 애플리케이션 실행</h3>
@@ -498,6 +541,14 @@ gradlew.bat test
 <h2><span class="no">7</span>첫 커밋과 푸시 <small>Commit, Commit and Push, Push</small></h2>
 <span class="who leader">팀장</span>
 <div class="why"><b>용어 3가지</b> <b>커밋(Commit)</b> = 내 PC 에 저장 기록 남기기, <b>푸시(Push)</b> = 기록을 GitHub 로 올리기, <b>풀(Pull / Update Project)</b> = GitHub 의 새 기록을 내 PC 로 가져오기.</div>
+
+<h3>7-0. IntelliJ 에 GitHub 계정 연결하기 (처음 한 번만)</h3>
+<ol class="steps">
+<li>메뉴 <b>File → Settings</b>(Windows: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>S</kbd>)를 엽니다.</li>
+<li>왼쪽에서 <b>Version Control → GitHub</b> 를 누르고, 오른쪽 위 <b>+</b> → <b>Log In via GitHub</b> 를 누릅니다.</li>
+<li>브라우저가 열리면 GitHub 에 로그인하고 <b>Authorize JetBrains</b> 를 누릅니다. IntelliJ 로 돌아와서 계정 이름이 보이면 성공입니다.</li>
+</ol>
+<div class="tip">이 연결을 하지 않으면 Push 할 때 로그인 창이 반복되거나 권한 오류가 날 수 있습니다.</div>
 
 <h3>7-1. 저장소 연결 (VCS 활성화)</h3>
 <ol class="steps">
@@ -710,6 +761,16 @@ gradlew.bat test
 <li>팀원 B 의 PR(<code>feature/footer-team</code>)이 먼저 머지되었다고 가정합니다. main 의 <code>footer.html</code> 저작권 줄은 이미 <code>… · 팀 A</code> 로 바뀌어 있습니다.</li>
 <li>팀원 C 의 PR(<code>feature/footer-year</code>)을 열면 PR 상단에 <b>This branch has conflicts that must be resolved</b> 가 나타납니다. 이것이 충돌 신호입니다.</li>
 </ol>
+
+<h3>10-1-b. 쉬운 방법: GitHub 웹에서 충돌 해결 (처음이라면 이 방법)</h3>
+<ol class="steps">
+<li>팀원 C 의 PR 화면 아래쪽에 <b>This branch has conflicts that must be resolved</b> 가 보이면 <b>Resolve conflicts</b> 버튼을 누릅니다.</li>
+<li>웹 편집기에 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> 로 표시된 부분이 보입니다. 표시 사이의 두 줄을 <b>하나의 줄</b>로 고칩니다.</li>
+<li>고친 결과 예: <code>2025 Shopping Mall Example WebSite · 팀 A</code></li>
+<li>표시 줄(<code>&lt;&lt;&lt;</code>, <code>===</code>, <code>&gt;&gt;&gt;</code>)을 모두 지우고 <b>Mark as resolved</b> → <b>Commit merge</b> 를 누릅니다.</li>
+<li>PR 화면을 새로고침해서 충돌 경고가 사라지고 <b>build-and-test</b> 가 다시 ✔ 가 되면 성공입니다.</li>
+</ol>
+<div class="tip">아래 10-2 는 같은 작업을 IntelliJ 에서 하는 방법입니다. 웹 방법으로 한 번 해 본 뒤에 IntelliJ 방법을 연습하면 이해가 쉽습니다.</div>
 
 <h3>10-2. IntelliJ 에서 충돌 해결하기 (팀원 C)</h3>
 <ol class="steps">
@@ -1029,6 +1090,10 @@ dependencies {
 <tr><td>로그에 <code>MySQL8Dialect … deprecated</code>, <code>mysql-connector-java … relocated</code></td><td>경고일 뿐 오류가 아님</td><td>무시해도 됩니다</td></tr>
 <tr><td><code>Push rejected</code> (non-fast-forward)</td><td>원격에 내 PC 에 없는 기록이 있음</td><td>Update Project(<kbd>Ctrl</kbd>+<kbd>T</kbd>) → 충돌 있으면 10장 → 다시 Push</td></tr>
 <tr><td>PR 에 <b>build-and-test</b> 가 ✘</td><td>테스트 실패 또는 MySQL 서비스 기동 실패</td><td>Actions → 실패한 단계 로그의 첫 빨간 줄 확인. 로컬에서 <code>./gradlew test</code> 로 재현</td></tr>
+<tr><td><code>Cannot find a Java installation matching … 25</code> (JDK 25 를 못 찾음)</td><td>Corretto 25 가 설치되지 않았거나 IntelliJ 가 찾지 못함</td><td>1-0 에서 Corretto 25 MSI 를 다시 설치 → IntelliJ 재시작. 그래도 안 되면 사용자 폴더의 <code>C:\Users\내아이디\.gradle\gradle.properties</code> 파일(없으면 새로 만들기)에 <code>org.gradle.java.installations.paths=C:\\Program Files\\Amazon Corretto\\jdk25.0.x 폴더 경로</code> 한 줄을 적음</td></tr>
+<tr><td><code>'docker' 은(는) 내부 또는 외부 명령이 아닙니다</code></td><td>Docker Desktop 이 실행되지 않았거나 설치되지 않음</td><td>Docker Desktop 을 실행하고 고래 아이콘이 안정될 때까지 기다린 뒤, IntelliJ 터미널을 닫고 다시 엽니다</td></tr>
+<tr><td><code>gradlew.bat</code> 을 찾을 수 없다고 나옴</td><td>터미널이 shop 폴더가 아닌 곳에서 열림</td><td>터미널에 <code>cd C:\work\shop</code>(본인 위치)을 입력해서 폴더를 옮긴 뒤 다시 실행. IntelliJ 의 Terminal 은 보통 프로젝트 폴더에서 열립니다</td></tr>
+<tr><td>Push 할 때 로그인 창이 계속 뜨거나 <code>Permission denied</code></td><td>GitHub 계정이 IntelliJ 에 연결되지 않음</td><td>7-0 의 GitHub 연결을 다시 하고, 그래도 안 되면 GitHub 에서 본인 계정의 비밀번호 대신 로그인 방식을 확인</td></tr>
 <tr><td>Actions 에 체크 이름이 안 보임</td><td>워크플로가 한 번도 실행되지 않음</td><td>main 에 push 하거나 Actions 탭에서 <b>Run workflow</b> 로 한 번 실행 후 보호 규칙 설정</td></tr>
 </table>
 
