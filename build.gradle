@@ -29,6 +29,10 @@ java {
 // 이 줄이 없으면 Windows 기본 인코딩(MS949)으로 읽어서 한글 주석과 한글 문자열이 깨질 수 있습니다.
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    // [JDK 25 · 중요] 컴파일러는 JDK 25 를 쓰지만, 만들어지는 클래스 파일 버전은 21 로 맞춥니다.
+    // Spring Boot 3.3.2 의 내부 도구(ASM)는 자바 25 클래스 파일을 읽지 못해 "Incompatible class format" 오류가 납니다.
+    // 자바 25 바이트코드 자체가 필요하면 Spring Boot 4.x 로 올려야 합니다 (자습서 13장 3-E).
+    options.release = 21
 }
 
 repositories {
@@ -51,23 +55,23 @@ dependencies {
 
     // [보일러플레이트 제거] Lombok : @Getter, @Setter, @RequiredArgsConstructor 같은 코드를 컴파일할 때 자동으로 만들어 줍니다.
     // compileOnly : 컴파일할 때만 필요하고, 실행 파일(jar)에는 넣지 않습니다. (pom: optional=true)
-    compileOnly 'org.projectlombok:lombok'
+    // [JDK 25 · 중요] Lombok 은 Spring Boot 기본 버전(1.18.34)이 JDK 25 에서 실패하므로 1.18.48 로 고정합니다.
+    // 1.18.34 를 쓰면 "ExceptionInInitializerError ... TypeTag :: UNKNOWN" 오류가 나고 getter/setter 가 만들어지지 않습니다.
+    compileOnly 'org.projectlombok:lombok:1.18.48'
     // annotationProcessor : 컴파일할 때 소스 코드를 읽고 추가 코드를 만들어 주는 도구를 등록합니다. (Lombok 은 이 등록이 꼭 필요합니다)
-    annotationProcessor 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    testCompileOnly 'org.projectlombok:lombok:1.18.48'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.48'
 
-    // [QueryDSL · JDK 25] pom.xml 의 5.0.0 은 JDK 25 의 컴파일러 내부 구조와 맞지 않아 실패합니다. 그래서 5.1.0 으로 올렸습니다. (Spring Boot 3.3.2 가 관리하는 버전과 같은 계열)
     // [QueryDSL] querydsl-jpa : JPA 기반으로 자바 코드로 쿼리를 작성하게 해 주는 라이브러리 (pom: querydsl-jpa, classifier jakarta)
-    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     // [QueryDSL] querydsl-core : QueryDSL 의 핵심 기능 (pom: querydsl-core)
-    implementation 'com.querydsl:querydsl-core:5.1.0'
+    implementation 'com.querydsl:querydsl-core:5.0.0'
     // [QueryDSL · 중요] querydsl-apt : 컴파일할 때 엔티티를 읽고 Q 클래스(예: QItem, QMember)를 자동으로 만들어 줍니다.
     // Maven 에서는 classpath 에 있으면 자동으로 실행되었지만, Gradle 은 annotationProcessor 에 적어야 실행됩니다.
     // 만들어진 Q 클래스는 build/generated/sources/annotationProcessor/java/main 폴더에 생깁니다.
-    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
-    // 처리기(apt)가 쓰는 core 도 같은 버전(5.1.0)으로 맞춥니다. 버전이 섞이면 처리기가 실패할 수 있습니다.
-    annotationProcessor 'com.querydsl:querydsl-core:5.1.0'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+    annotationProcessor 'com.querydsl:querydsl-core:5.0.0'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
@@ -91,6 +95,8 @@ dependencies {
     // developmentOnly : bootRun 과 IDE 실행 때만 쓰고, 실행 파일(jar)에는 넣지 않습니다. (Maven 에서는 jar 에도 들어갔습니다)
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // [테스트 · Gradle 9] JUnit 실행기(launcher). Gradle 9 부터는 자동으로 넣지 않으므로 직접 적어야 테스트가 실행됩니다. (책 build.gradle 과 같은 줄)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // [테스트] spring-boot-starter-test : JUnit, AssertJ, Mockito 등 테스트 도구 묶음 (pom: spring-boot-starter-test, scope test)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
