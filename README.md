@@ -9,6 +9,7 @@
 
 ## 쇼핑몰(shop) 팀 프로젝트
 - 프로젝트: Spring Boot 3.3.2 + JPA + Thymeleaf + Spring Security, 빌드 도구는 **Maven → Gradle** 로 전환했습니다.
+- 필요한 것: **JDK 25** (Amazon Corretto 25 권장). Gradle 은 `gradlew` 가 9.2.1 을 자동으로 받습니다.
 - 실행: `./gradlew bootRun` (Windows: `gradlew.bat bootRun`), 주소 http://localhost:8081
 - 테스트: `./gradlew test` (MySQL 8.0, `localhost:3306`, root/0000, DB `shop` 필요)
 - 자동 검사: `.github/workflows/shop-ci.yml` (PR 과 main push 마다 `./gradlew test`)

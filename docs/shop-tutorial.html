@@ -205,24 +205,24 @@ footer.end { font-size: 14px; color: var(--muted); margin-top: 28px; }
 
 <section class="lesson" id="s1" data-title="1. 준비물 설치">
 <h2><span class="no">1</span>준비물 설치 <small>각자 자기 PC 에 설치합니다</small></h2>
-<div class="why"><b>왜 이 버전인가요?</b> shop.zip 의 pom.xml 은 <code>java.version 17</code>, Spring Boot <code>3.3.2</code> 입니다. Gradle 로 바꿔도 같은 버전을 써야 기존 코드가 그대로 동작합니다. JDK 는 <b>17 이상</b>이 필요하고 이 자습서는 <b>JDK 17</b> 을 기준으로 합니다.</div>
+<div class="why"><b>왜 이 버전인가요?</b> shop.zip 의 pom.xml 은 <code>java.version 17</code> 이었지만, 이 프로젝트는 <b>JDK 25</b> 를 기준으로 합니다. Spring Boot 는 <code>3.3.2</code> 를 그대로 씁니다. 그리고 JDK 25 에서 QueryDSL 이 동작하도록 QueryDSL 은 5.1.0, Gradle 은 9.2.1 로 올렸습니다. JDK 는 <b>25</b> 가 필요합니다.</div>
 
 <table class="compare">
 <tr><th>준비물</th><th>권장 버전</th><th>확인 명령 (명령 프롬프트 · 터미널)</th></tr>
-<tr><td>JDK</td><td>Amazon Corretto 17 (또는 Temurin 17)</td><td><code>java -version</code></td></tr>
+<tr><td>JDK</td><td>Amazon Corretto 25 (또는 Temurin 25)</td><td><code>java -version</code></td></tr>
 <tr><td>IntelliJ IDEA</td><td>Community 또는 Ultimate 최신판</td><td>실행 후 메뉴 Help → About</td></tr>
 <tr><td>Git</td><td>2.40 이상</td><td><code>git --version</code></td></tr>
 <tr><td>MySQL</td><td>8.0 (Docker 또는 설치판)</td><td><code>mysql --version</code> 또는 Docker Desktop</td></tr>
 <tr><td>GitHub 계정</td><td>무료 계정</td><td>github.com 로그인</td></tr>
 </table>
 
-<h3>1-1. JDK 17 설치</h3>
+<h3>1-1. JDK 25 설치</h3>
 <ol class="steps">
-<li>IntelliJ 를 쓰면 설치 과정에서 JDK 를 바로 내려받을 수 있습니다 (3단계에서 설명). 직접 설치하려면 <b>Amazon Corretto 17</b> 을 받아 기본값으로 설치합니다.</li>
+<li>IntelliJ 를 쓰면 설치 과정에서 JDK 를 바로 내려받을 수 있습니다 (3단계에서 설명). 직접 설치하려면 <b>Amazon Corretto 25</b> 를 받아 기본값으로 설치합니다.</li>
 <li>설치 후 명령 프롬프트(Windows: <kbd>Win</kbd>+<kbd>R</kbd> → <code>cmd</code>)를 열고 아래 명령을 입력합니다.</li>
 </ol>
 <div class="codebox"><div class="bar"><span class="fname">명령 프롬프트</span><button class="copy">복사</button></div><pre>java -version</pre></div>
-<p class="caption">출력에 <code>version "17.</code> 이 보이면 성공입니다. <code>25</code> 나 <code>21</code> 이 보여도 IntelliJ 에서 17 을 고르면 됩니다.</p>
+<p class="caption">출력에 <code>version "25.</code> 이 보이면 성공입니다. 다른 버전(예: 21, 17)이 보이면 IntelliJ 에서 JDK 25 를 고르면 됩니다.</p>
 
 <h3>1-2. Git 설치와 이름 설정</h3>
 <ol class="steps">
@@ -241,7 +241,7 @@ git config --global init.defaultBranch main</pre></div>
 <div class="codebox"><div class="bar"><span class="fname">명령 프롬프트 (방법 A)</span><button class="copy">복사</button></div><pre>docker run -d --name shop-mysql -e MYSQL_ROOT_PASSWORD=0000 -e MYSQL_DATABASE=shop -p 3306:3306 mysql:8.0</pre></div>
 
 <h3>미션 체크</h3>
-<label class="do"><input type="checkbox" data-mission="s1-1"><span class="do-text"><code>java -version</code> 에서 17 이상이 보입니다.</span></label>
+<label class="do"><input type="checkbox" data-mission="s1-1"><span class="do-text"><code>java -version</code> 에서 25 가 보입니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s1-2"><span class="do-text"><code>git config --global user.name</code> 과 <code>user.email</code> 을 설정했습니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s1-3"><span class="do-text">MySQL 이 <code>localhost:3306</code> 에서 실행 중이고 root 비밀번호가 <code>0000</code> 입니다.</span></label>
 
@@ -290,7 +290,7 @@ git config --global init.defaultBranch main</pre></div>
 <ol class="steps">
 <li><b>Build, Execution, Deployment → Build Tools → Gradle</b> 로 이동합니다.</li>
 <li><b>Build and run using</b> 과 <b>Run tests using</b> 을 둘 다 <b>Gradle</b> 로 바꿉니다. 이렇게 해야 IntelliJ 실행 결과가 GitHub Actions 와 똑같아집니다.</li>
-<li><b>Gradle JVM</b> 을 <b>JDK 17</b> 로 고릅니다. 목록에 없으면 <b>Download JDK…</b> 에서 Amazon Corretto 17 을 받습니다.</li>
+<li><b>Gradle JVM</b> 을 <b>JDK 25</b> 로 고릅니다. 목록에 없으면 <b>Download JDK…</b> 에서 Amazon Corretto 25 를 받습니다.</li>
 </ol>
 
 <h3>3-3. 인코딩을 UTF-8 로 맞추기</h3>
@@ -315,7 +315,7 @@ git config --global init.defaultBranch main</pre></div>
 
 <h3>미션 체크</h3>
 <label class="do"><input type="checkbox" data-mission="s3-1"><span class="do-text">Build and run using 과 Run tests using 이 모두 <b>Gradle</b> 입니다.</span></label>
-<label class="do"><input type="checkbox" data-mission="s3-2"><span class="do-text">Gradle JVM 이 <b>JDK 17</b> 입니다.</span></label>
+<label class="do"><input type="checkbox" data-mission="s3-2"><span class="do-text">Gradle JVM 이 <b>JDK 25</b> 입니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s3-3"><span class="do-text">File Encodings 가 모두 <b>UTF-8</b> 입니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s3-4"><span class="do-text">Enable annotation processing 이 체크되어 있습니다.</span></label>
 
@@ -346,7 +346,7 @@ git config --global init.defaultBranch main</pre></div>
 <table class="compare">
 <tr><th>Maven (pom.xml, 원본)</th><th>Gradle (build.gradle, 전환 후)</th><th>뜻</th></tr>
 <tr><td><code>&lt;parent&gt; spring-boot-starter-parent 3.3.2</code></td><td><code>id 'org.springframework.boot' version '3.3.2'</code></td><td>스프링 부트 버전과 기본 설정</td></tr>
-<tr><td><code>&lt;java.version&gt;17</code></td><td><code>sourceCompatibility = JavaVersion.VERSION_17</code></td><td>자바 17 문법으로 컴파일</td></tr>
+<tr><td><code>&lt;java.version&gt;17</code></td><td><code>toolchain { languageVersion = JavaLanguageVersion.of(25) }</code></td><td>JDK 25 로 컴파일 (QueryDSL 은 5.1.0)</td></tr>
 <tr><td><code>&lt;dependency&gt;</code> (일반)</td><td><code>implementation '…'</code></td><td>컴파일과 실행에 모두 사용</td></tr>
 <tr><td><code>&lt;scope&gt;runtime&lt;/scope&gt;</code></td><td><code>runtimeOnly '…'</code></td><td>실행할 때만 필요 (H2, MySQL 드라이버)</td></tr>
 <tr><td><code>&lt;scope&gt;test&lt;/scope&gt;</code></td><td><code>testImplementation '…'</code></td><td>테스트할 때만 필요</td></tr>
@@ -556,7 +556,7 @@ gradlew.bat test
 <tr><td><code>on: push / pull_request</code></td><td>main 에 push 하거나 main 을 향한 PR 이 올라올 때 실행</td></tr>
 <tr><td><code>runs-on: ubuntu-latest</code></td><td>GitHub 가 빌려주는 리눅스 가상 PC 에서 실행</td></tr>
 <tr><td><code>services: mysql:8.0</code></td><td>테스트가 쓸 MySQL 을 같이 띄움 (root 비밀번호 0000, DB shop)</td></tr>
-<tr><td><code>actions/setup-java@v4</code> (JDK 17)</td><td>자바 17 설치, <code>cache: gradle</code> 로 다음 실행을 빠르게</td></tr>
+<tr><td><code>actions/setup-java@v4</code> (JDK 25)</td><td>자바 25(Corretto) 설치, <code>cache: gradle</code> 로 다음 실행을 빠르게</td></tr>
 <tr><td><code>chmod +x ./gradlew</code></td><td>리눅스에서 실행 권한 부여</td></tr>
 <tr><td><code>./gradlew test</code></td><td>테스트 25개 실행. 하나라도 실패하면 빨간색(✘)</td></tr>
 <tr><td><code>upload-artifact</code></td><td>테스트 보고서를 Actions 화면에 첨부 (실패해도 항상)</td></tr>
@@ -612,7 +612,7 @@ gradlew.bat test
 <li>IntelliJ 시작 화면에서 <b>Get from VCS</b> (메뉴: <b>File → New → Project from Version Control</b>) 를 누릅니다.</li>
 <li><b>URL</b> 에 팀장이 만든 저장소 주소(<code>https://github.com/팀장아이디/shop-team.git</code>)를 넣고, <b>Directory</b> 에 저장할 폴더를 고른 뒤 <b>Clone</b> 을 누릅니다.</li>
 <li>GitHub 로그인 창이 뜨면 본인 계정으로 로그인합니다. (비밀번호 대신 브라우저 인증 방식을 쓰는 것이 편합니다)</li>
-<li>Trust Project → Gradle 가져오기가 끝날 때까지 기다립니다. 4장·3장의 설정(JDK 17, UTF-8)이 적용되어 있는지 다시 봅니다.</li>
+<li>Trust Project → Gradle 가져오기가 끝날 때까지 기다립니다. 3장의 설정(JDK 25, UTF-8)이 적용되어 있는지 다시 봅니다.</li>
 </ol>
 
 <h3>9-2. ② 브랜치 만들기 · 내 작업 공간 분리</h3>
@@ -841,7 +841,7 @@ gradlew.bat test
 
 <section class="lesson" id="s13" data-title="13. 심화 기술 (책 · 개정판 기술 지도)">
 <h2><span class="no">13</span>심화 기술 <small>원본 책(github.com/shinsunyoung/springboot-developer-4)의 기술을 shop 과 연결합니다</small></h2>
-<div class="why"><b>이 장의 원칙</b> 책 소개에 나온 기술 — JPA, OAuth2(소셜 로그인), AWS(클라우드 배포), CI/CD(배포 자동화), 스프링 AI — 을 이 자습서에서 <b>단계별로</b> 다룹니다. shop 본 프로젝트는 <b>Spring Boot 3.3.2 · Java 17</b> 로 유지해서 완성 기준을 깨지 않습니다. 그래서 아래 3-A ~ 3-E 는 <b>shop 에 추가하는 심화 실습</b>이며, 각 실습은 <b>별도 브랜치와 PR</b>로 합니다.</div>
+<div class="why"><b>이 장의 원칙</b> 책 소개에 나온 기술 — JPA, OAuth2(소셜 로그인), AWS(클라우드 배포), CI/CD(배포 자동화), 스프링 AI — 을 이 자습서에서 <b>단계별로</b> 다룹니다. shop 본 프로젝트는 <b>Spring Boot 3.3.2 · JDK 25</b> 로 유지해서 완성 기준을 깨지 않습니다. 그래서 아래 3-A ~ 3-E 는 <b>shop 에 추가하는 심화 실습</b>이며, 각 실습은 <b>별도 브랜치와 PR</b>로 합니다.</div>
 
 <h3>13-1. 기술 지도</h3>
 <table class="compare">
@@ -853,7 +853,7 @@ gradlew.bat test
 <tr><td>AWS S3 파일 저장 + <code>@Profile</code></td><td><code>chapter12</code>·<code>chapter13</code>, <code>appendixA~D</code> 의 <code>AwsS3Service</code>, <code>LocalFileStorageService</code>, <code>S3Config</code></td><td>심화 3-B</td></tr>
 <tr><td>OAuth2 구글 로그인</td><td><code>chapter11</code>, <code>appendixB</code> 의 <code>WebOAuthSecurityConfig</code>, <code>OAuth2SuccessHandler</code></td><td>심화 3-C</td></tr>
 <tr><td>Spring AI (OpenRouter 로 글 작성 도우미)</td><td><code>chapter8</code> 이후 <code>WritingAssistantService</code>, <code>prompts/*.st</code></td><td>심화 3-D</td></tr>
-<tr><td>Spring Boot 4.0.1 · Java 25</td><td>각 장의 <code>build.gradle</code> (<code>toolchain 25</code>)</td><td>심화 3-E (업그레이드 점검표)</td></tr>
+<tr><td>Spring Boot 4.0.1</td><td>각 장의 <code>build.gradle</code> (<code>org.springframework.boot 4.0.1</code>)</td><td>심화 3-E (업그레이드 점검표)</td></tr>
 <tr><td>관측성(모니터링)</td><td>책 소개문에 언급됨 — 이 저장소의 설정 파일에서는 Actuator 설정을 찾지 못했습니다</td><td>이 자습서에서는 다루지 않음</td></tr>
 </table>
 
@@ -864,7 +864,7 @@ gradlew.bat test
 <ol class="steps">
 <li>AWS 콘솔에서 IAM 사용자를 만들고, Elastic Beanstalk 배포에 필요한 권한만 줍니다. 그 사용자의 <b>Access key</b> 두 개를 발급받습니다.</li>
 <li>GitHub 저장소 <b>Settings → Secrets and variables → Actions → New repository secret</b> 에 <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code> 두 개를 등록합니다. 값은 화면에 다시 보이지 않습니다.</li>
-<li>책 부록과 같은 구조의 <code>cd.yml</code> 을 씁니다 (아래 예시). <b>JDK 는 17</b>로 맞춘 점, 그리고 <code>chmod</code> 와 빌드 단계가 shop 에 맞게 바뀐 점을 확인하세요.</li>
+<li>책 부록과 같은 구조의 <code>cd.yml</code> 을 씁니다 (아래 예시). <b>JDK 는 25</b>로 맞춘 점, 그리고 <code>chmod</code> 와 빌드 단계가 shop 에 맞게 바뀐 점을 확인하세요.</li>
 </ol>
 <div class="codebox"><div class="bar"><span class="fname">.github/workflows/shop-cd.yml (예시 · 심화)</span><button class="copy">복사</button></div><pre>name: shop CD
 
@@ -884,8 +884,8 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: '17'
+          distribution: corretto
+          java-version: '25'
           cache: gradle
 
       - name: 실행 권한 주기
@@ -975,19 +975,19 @@ dependencies {
 </ol>
 <div class="tip">무료 모델은 응답이 느리거나 실패할 수 있습니다. 실패해도 shop 의 다른 기능에는 영향이 없도록, AI 호출은 별도 버튼과 서비스에만 두세요.</div>
 
-<h3>13-6. 3-E · Spring Boot 4.0.1 · Java 25 로 올리기 (업그레이드 점검표)</h3>
-<div class="why"><b>왜 바로 안 올리나요?</b> 책의 최신 장은 Spring Boot 4.0.1 과 Java 25 를 씁니다. 하지만 shop 은 Spring Boot 3.3.2 와 Java 17 기준으로 만들어졌고, 버전을 한 번에 올리면 설정 변경이 많습니다. 아래 점검표로 <b>별도 브랜치(<code>feature/boot4-upgrade</code>)에서</b> 하나씩 올리는 것을 권장합니다.</div>
+<h3>13-6. 3-E · Spring Boot 4.0.1 로 올리기 (업그레이드 점검표)</h3>
+<div class="why"><b>왜 바로 안 올리나요?</b> 책의 최신 장은 Spring Boot 4.0.1 과 JDK 25 를 씁니다. shop 은 이미 JDK 25 로 빌드하지만 Spring Boot 는 3.3.2 입니다. 버전을 한 번에 올리면 설정 변경이 많습니다. 아래 점검표로 <b>별도 브랜치(<code>feature/boot4-upgrade</code>)에서</b> 하나씩 올리는 것을 권장합니다.</div>
 <table class="compare">
 <tr><th>바꿀 곳</th><th>현재 (shop)</th><th>책 최신 (chapter13)</th></tr>
 <tr><td>플러그인 버전</td><td><code>org.springframework.boot 3.3.2</code></td><td><code>org.springframework.boot 4.0.1</code></td></tr>
-<tr><td>자바 버전</td><td><code>JavaVersion.VERSION_17</code></td><td><code>toolchain { languageVersion = JavaLanguageVersion.of(25) }</code></td></tr>
-<tr><td>Gradle</td><td>8.14.3</td><td>Java 25 를 쓰려면 Gradle 9.x 필요</td></tr>
+<tr><td>JDK 버전</td><td>25 (<code>toolchain { languageVersion = JavaLanguageVersion.of(25) }</code>)</td><td>25 (같음)</td></tr>
+<tr><td>Gradle</td><td>9.2.1 (JDK 25 를 실행하려면 9.x 필요)</td><td>책과 같은 계열</td></tr>
 <tr><td>Querydsl · 보안 · 템플릿 라이브러리</td><td>5.0.0 · 3.1.1 · 3.3.0</td><td>Boot 4 에 맞는 버전으로 재확인 (Boot 4 는 패키지 구조가 일부 바뀜)</td></tr>
-<tr><td>CI 의 JDK</td><td><code>temurin 17</code></td><td><code>corretto 25</code></td></tr>
+<tr><td>CI 의 JDK</td><td><code>corretto 25</code> (이미 같음)</td><td><code>corretto 25</code></td></tr>
 </table>
 <ol class="steps">
 <li>브랜치를 만들고 플러그인 버전 한 줄만 바꿔 빌드합니다. 실패하면 로그의 첫 오류부터 읽습니다.</li>
-<li>JDK 를 바꾸면 <b>Gradle JVM</b>(3장), CI 의 <code>java-version</code>(8장) 두 곳을 같이 바꿉니다.</li>
+<li>JDK 버전을 바꾸면 <b>build.gradle 의 toolchain</b>, <b>Gradle JVM</b>(3장), CI 의 <code>java-version</code>(8장) 세 곳을 같이 바꿉니다.</li>
 <li><code>./gradlew test</code> 가 25개 모두 통과하면 PR 을 올립니다. 통과하지 못하면 PR 을 올리지 말고 원인부터 적으세요.</li>
 </ol>
 
@@ -1019,7 +1019,8 @@ dependencies {
 <tr><td>테스트에서 <code>No such file or directory … C:/shop/item</code></td><td>이 저장소의 테스트는 수정돼 있음. 예전 zip 을 썼을 가능성</td><td><code>application-test.properties</code> 의 <code>itemImgLocation=${java.io.tmpdir}</code> 줄이 있는지 확인</td></tr>
 <tr><td>상품 등록 때 파일 저장 오류 (Windows)</td><td><code>C:\shop\item</code> 폴더가 없음</td><td>2장의 <code>mkdir C:\shop\item</code> 실행</td></tr>
 <tr><td><code>Port 8081 was already in use</code></td><td>이전 실행이 아직 켜져 있음</td><td>Run 창의 ■ 로 중지. 또는 작업 관리자에서 java 프로세스 종료</td></tr>
-<tr><td><code>Unsupported class file major version</code> 또는 Gradle 이 JDK 를 못 찾음</td><td>JDK 25 를 Gradle 이 실행하려고 함 (Gradle 8.14 는 JDK 24 까지)</td><td>3-2 에서 Gradle JVM 을 <b>17</b> 로 변경</td></tr>
+<tr><td><code>Cannot find a Java installation matching … 25</code> (JDK 를 못 찾음)</td><td>PC 에 JDK 25 가 없음 (build.gradle 의 toolchain 이 25 를 요구)</td><td>IntelliJ 의 <b>Download JDK…</b> 에서 Amazon Corretto 25 설치 후 Gradle JVM 을 25 로 지정</td></tr>
+<tr><td><code>ExceptionInInitializerError</code> / <code>TypeTag :: UNKNOWN</code> (Q 클래스 생성 중)</td><td>QueryDSL 5.0.0 이 JDK 25 와 맞지 않음</td><td>build.gradle 의 QueryDSL 을 <b>5.1.0</b> 으로 맞춘 뒤 다시 build</td></tr>
 <tr><td><code>Could not resolve … 429 Too Many Requests</code> (의존성 다운로드)</td><td>라이브러리 저장소가 잠시 요청을 제한함</td><td>몇 분 뒤 다시 실행. 회사·학교 네트워크라면 프록시 설정 확인</td></tr>
 <tr><td>로그에 <code>MySQL8Dialect … deprecated</code>, <code>mysql-connector-java … relocated</code></td><td>경고일 뿐 오류가 아님</td><td>무시해도 됩니다</td></tr>
 <tr><td><code>Push rejected</code> (non-fast-forward)</td><td>원격에 내 PC 에 없는 기록이 있음</td><td>Update Project(<kbd>Ctrl</kbd>+<kbd>T</kbd>) → 충돌 있으면 10장 → 다시 Push</td></tr>

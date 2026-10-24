@@ -17,10 +17,12 @@ version = '0.0.1-SNAPSHOT'
 description = 'Shop Project for Spring Boot'
 
 java {
-    // pom.xml 의 <java.version>17</java.version> 과 같은 값입니다. 자바 17 문법으로 컴파일합니다.
-    // JDK 17 이상이 설치되어 있으면 됩니다. (권장: JDK 17)
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    // toolchain : 이 프로젝트를 컴파일하고 실행할 JDK 버전입니다. 여기서는 JDK 25 를 씁니다.
+    // (pom.xml 의 <java.version>17</java.version> 에서 25 로 올렸습니다. 책의 최신 장과 같은 버전입니다)
+    // PC 에 JDK 25 가 없으면 Gradle 이 찾지 못하므로, IntelliJ 에서 JDK 25 를 먼저 설치해야 합니다. (권장: Amazon Corretto 25)
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
 
 // 자바 파일(한글 주석 포함)을 UTF-8 로 읽습니다.
@@ -55,16 +57,17 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
+    // [QueryDSL · JDK 25] pom.xml 의 5.0.0 은 JDK 25 의 컴파일러 내부 구조와 맞지 않아 실패합니다. 그래서 5.1.0 으로 올렸습니다. (Spring Boot 3.3.2 가 관리하는 버전과 같은 계열)
     // [QueryDSL] querydsl-jpa : JPA 기반으로 자바 코드로 쿼리를 작성하게 해 주는 라이브러리 (pom: querydsl-jpa, classifier jakarta)
-    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     // [QueryDSL] querydsl-core : QueryDSL 의 핵심 기능 (pom: querydsl-core)
-    implementation 'com.querydsl:querydsl-core:5.0.0'
+    implementation 'com.querydsl:querydsl-core:5.1.0'
     // [QueryDSL · 중요] querydsl-apt : 컴파일할 때 엔티티를 읽고 Q 클래스(예: QItem, QMember)를 자동으로 만들어 줍니다.
     // Maven 에서는 classpath 에 있으면 자동으로 실행되었지만, Gradle 은 annotationProcessor 에 적어야 실행됩니다.
     // 만들어진 Q 클래스는 build/generated/sources/annotationProcessor/java/main 폴더에 생깁니다.
-    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
-    // Spring Boot 이 관리하는 버전(5.1.0)이 들어가지 않도록, 처리기(apt)가 쓰는 core 도 5.0.0 으로 고정합니다. (pom.xml 과 같은 버전)
-    annotationProcessor 'com.querydsl:querydsl-core:5.0.0'
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+    // 처리기(apt)가 쓰는 core 도 같은 버전(5.1.0)으로 맞춥니다. 버전이 섞이면 처리기가 실패할 수 있습니다.
+    annotationProcessor 'com.querydsl:querydsl-core:5.1.0'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
 
