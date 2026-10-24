@@ -1,0 +1,33 @@
+# [Gradle 전환] Gradle 빌드 결과물과 캐시는 git 에 올리지 않습니다.
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Maven 빌드 결과물 (전환 전 흔적)
+HELP.md
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+# .idea 폴더는 각자 PC 설정이므로 올리지 않습니다.
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### VS Code ###
+.vscode/

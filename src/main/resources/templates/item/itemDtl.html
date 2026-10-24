@@ -1,0 +1,245 @@
+<!--
+
+✅ 전체 구조 요약:
+이 페이지는 사용자가 상품 상세 정보를 보고, 수량을 선택해 장바구니에 담거나 주문할 수 있는 기능을 제공하는 화면입니다.
+
+주요 특징은 다음과 같습니다:
+
+CSRF 보안 처리
+
+jQuery를 이용한 수량 변경 및 총 가격 자동 계산
+
+AJAX 기반 주문 및 장바구니 기능
+
+상품 품절 여부에 따른 버튼 처리
+
+상품 이미지 및 상세 설명 출력
+
+-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}"> <!-- 📌 layout:decorate은 Thymeleaf Layout Dialect 기능으로, 이 페이지가 layouts/layout1.html 템플릿을 기반으로 구성됨을 의미 -->
+
+<head>
+    <!-- 📌 Spring Security의 CSRF 보호 기능을 위한 메타 태그. jQuery AJAX 요청 시 사용할 토큰과 헤더 이름을 제공 -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<!-- 📌 레이아웃에서 'script' fragment 위치에 삽입될 스크립트 정의 -->
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        $(document).ready(function(){
+
+            // 페이지 로드 후 최초 총 결제 금액 계산 실행
+            calculateToalPrice();
+
+            // 수량 변경 시마다 총 결제 금액을 다시 계산하여 반영
+            $("#count").change(function(){
+                calculateToalPrice();
+            });
+        });
+
+        // 🧮 총 결제 금액 계산 함수: 수량 * 가격
+        //- 현재 주문할 상품 수량과  상품 한개당 가격을 곱해서 결제 금액을 구해주는 함수
+        function calculateToalPrice(){
+            var count = $("#count").val();    // 수량 값 가져오기
+            var price = $("#price").val();    // 가격 값 가져오기
+            var totalPrice = price * count;   // 곱셈 연산
+            $("#totalPrice").html(totalPrice + '원'); // 계산된 결과를 HTML에 반영
+        }
+
+        // 🛒 [주문하기] 버튼 클릭 시 호출되는 함수 - AJAX POST 방식으로 주문 데이터 전송
+        function order(){
+            //스프링 시큐리티를 사용할 경우 기본적으로 POST 방식의 데이터 전송에는 CSRF 토큰 값이 필요하므로 해당값들을
+            //HTTP 요청 메세지의 요청 header에 설정 해 요청하기 위해 각각 저장
+            var token = $("meta[name='_csrf']").attr("content");         // CSRF 토큰 추출
+            var header = $("meta[name='_csrf_header']").attr("content"); // CSRF 헤더 이름 추출
+
+            var url = "/order"; // 주문 요청 URL
+
+            //주문할 상품의 아이디와 주문 수량 데이터를 전달할 객체를 생성합니다.
+            var paramData = {
+                itemId : $("#itemId").val(),  // 상품 ID
+                count : $("#count").val()     // 수량
+            };
+
+            //서버에 보낼 주문 데이터를 JSON 문자열로 변환해서 저장
+            var param = JSON.stringify(paramData);
+
+            $.ajax({
+                url: url,   // /order  서버(OrderController.java - order 메소드)에  POST로 주문 요청 할 URL
+                type: "POST",
+                contentType: "application/json", //서버에 요청할 데이터 형식을  JSON 타입으로 설정
+                data: param,                     //서버에 요청  전송할 본문 주문 데이터
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader(header, token); // 요청 헤더에 CSRF 토큰 설정
+                },
+                dataType: "json",    // 응답을 JSON으로 기대
+                cache: false,        // 브라우저 캐시 비활성화
+                success: function(result, status){
+                    alert("주문이 완료 되었습니다.");
+                    location.href = '/'; // 메인 페이지로 리다이렉션
+                },
+                error: function(jqXHR){
+                    if(jqXHR.status == '401'){ // 인증되지 않은 사용자인 경우
+                        alert('로그인 후 이용해주세요');
+                        location.href = '/members/login'; // 로그인 페이지 이동
+                    } else {
+                        alert(jqXHR.responseText); // 오류 메시지 출력
+                    }
+                }
+            });
+        }
+
+        // 🛍️ [장바구니 담기] 버튼 클릭 시 호출되는 함수 - AJAX로 장바구니 저장
+        function addCart(){
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            var url = "/cart"; // 장바구니 등록 URL
+            var paramData = {
+                itemId : $("#itemId").val(),
+                count : $("#count").val()
+            };
+
+            var param = JSON.stringify(paramData);
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json",
+                data: param,
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader(header, token);
+                },
+                dataType: "json",
+                cache: false,
+                success: function(result, status){
+                    alert("상품을 장바구니에 담았습니다.");
+                    location.href = '/';
+                },
+                error: function(jqXHR){
+                    if(jqXHR.status == '401'){
+                        alert('로그인 후 이용해주세요');
+                        location.href = '/members/login';
+                    } else {
+                        alert(jqXHR.responseText);
+                    }
+                }
+            });
+        }
+    </script>
+</th:block>
+
+<!-- 📌 사용자 정의 CSS 삽입 -->
+<th:block layout:fragment="css">
+    <style>
+        .mgb-15 { margin-bottom: 15px; }  /* 마진 아래 */
+        .mgt-30 { margin-top: 30px; }     /* 마진 위 */
+        .mgt-50 { margin-top: 50px; }
+        .repImgDiv {                      /* 대표 이미지 감싸는 div */
+            margin-right: 15px;
+            height: auto;
+            width: 50%;
+        }
+        .repImg {                         /* 대표 이미지 크기 */
+            width: 100%;
+            height: 400px;
+        }
+        .wd50 {                           /* 오른쪽 영역 너비 조절 */
+            height: auto;
+            width: 50%;
+        }
+    </style>
+</th:block>
+
+<!-- 📦 실제 콘텐츠가 들어갈 Fragment 지정 -->
+<div layout:fragment="content" style="margin-left:25%; margin-right:25%">
+
+    <!-- 🆔 상품 ID를 숨은 필드로 저장 (Ajax 주문/장바구니 기능에 사용됨) -->
+    <input type="hidden" id="itemId" th:value="${item.id}">
+
+    <!-- 🔳 상품 이미지 + 정보 섹션 -->
+    <div class="d-flex">
+        <!-- 왼쪽: 대표 이미지 -->
+        <div class="repImgDiv">
+            <img th:src="${item.itemImgDtoList[0].imgUrl}" class="rounded repImg" th:alt="${item.itemNm}">
+        </div>
+
+        <!-- 오른쪽: 상품 정보 및 버튼 -->
+        <div class="wd50">
+            <!-- 판매 상태 뱃지: SELL 상태일 경우 파랑 / 그 외는 품절로 빨강 -->
+            <span th:if="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="badge badge-primary mgb-15">
+                판매중
+            </span>
+            <span th:unless="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="badge btn-danger mgb-15">
+                품절
+            </span>
+
+            <!-- 상품명 출력 -->
+            <div class="h4" th:text="${item.itemNm}"></div>
+            <hr class="my-4">
+
+            <!-- 가격 및 수량 선택 UI -->
+            <div class="text-right">
+                <div class="h4 text-danger text-left">
+                    <input type="hidden" th:value="${item.price}" id="price" name="price">
+                    <span th:text="${item.price}"></span>원 <!-- 가격 출력 -->
+                </div>
+
+                <!-- 수량 선택 인풋 (1 이상만 입력 가능) -->
+                <div class="input-group w-50">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">수량</span>
+                    </div>
+                    <input type="number" name="count" id="count" class="form-control" value="1" min="1">
+                </div>
+            </div>
+            <hr class="my-4">
+
+            <!-- 계산된 총 결제 금액 표시 영역 -->
+            <div class="text-right mgt-50">
+                <h5>결제 금액</h5>
+                <h3 name="totalPrice" id="totalPrice" class="font-weight-bold"></h3>
+            </div>
+
+            <!-- 판매 중일 경우 버튼 표시: 장바구니 / 주문 -->
+            <div th:if="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="text-right">
+                <button type="button" class="btn btn-light border border-primary btn-lg" onclick="addCart()">장바구니 담기</button>
+                <button type="button" class="btn btn-primary btn-lg" onclick="order()">주문하기</button>
+            </div>
+
+            <!-- 품절일 경우 품절 버튼만 출력 -->
+            <div th:unless="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="text-right">
+                <button type="button" class="btn btn-danger btn-lg">품절</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상품 상세 설명 출력 영역 -->
+    <div class="jumbotron jumbotron-fluid mgt-30">
+        <div class="container">
+            <h4 class="display-5">상품 상세 설명</h4>
+            <hr class="my-4">
+            <p class="lead" th:text="${item.itemDetail}"></p>
+        </div>
+    </div>
+
+    <!-- 상품 이미지들 반복 출력 (썸네일/추가 이미지) -->
+    <!--
+        등록된 상품 이미지를 반복 구문을 통해 보여주고 있습니다.
+        보통 실제 쇼핑몰에서는 상품에 대한 정보를 예쁘게 이미지로 만들어서 보여줍니다.
+    -->
+    <div th:each="itemImg : ${item.itemImgDtoList}" class="text-center">
+        <img th:if="${not #strings.isEmpty(itemImg.imgUrl)}"
+             th:src="${itemImg.imgUrl}"
+             class="rounded mgb-15"
+             width="800">
+    </div>
+
+</div>
+</html>
+
