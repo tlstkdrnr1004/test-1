@@ -609,6 +609,7 @@ gradlew.bat test
 <h2><span class="no">8</span>GitHub Actions 자동 테스트 <small>shop-ci.yml · PR 마다 자동 빌드·테스트</small></h2>
 <span class="who leader">팀장</span>
 <div class="why"><b>GitHub Actions 란?</b> 저장소의 <code>.github/workflows/</code> 안 YAML 파일에 적어 둔 작업을 GitHub 가 대신 실행해 주는 기능입니다. 우리 CI 는 <b>push 나 PR 이 올라올 때마다 리눅스 서버에서 테스트 25개를 돌립니다.</b> 이 장이 완성 기준 ⑤ 입니다.</div>
+<div class="warn"><b>순서 주의</b> 워크플로 파일(<code>shop-ci.yml</code>)은 <b>main 브랜치에 있어야</b> 팀원 PR 에서도 자동 테스트가 돕니다. GitHub 은 PR 에 들어 있는 워크플로 파일로 테스트를 돌리기 때문입니다. 그래서 <b>이 장의 워크플로 파일이 main 에 머지된 뒤에</b> 팀원들이 PR 을 올려야 ✔/✘ 가 보입니다. 아직 main 에 없다면 팀장이 먼저 main 에 머지합니다.</div>
 
 <h3>8-1. 워크플로 파일 이해하기</h3>
 <p>파일은 이미 <code>.github/workflows/shop-ci.yml</code> 로 저장소에 들어 있습니다. 아래 표로 각 줄의 뜻을 확인하세요. 파일 안의 한글 주석과 같은 내용입니다.</p>
@@ -1104,7 +1105,7 @@ dependencies {
 <tr><td><code>'docker' 은(는) 내부 또는 외부 명령이 아닙니다</code></td><td>Docker Desktop 이 실행되지 않았거나 설치되지 않음</td><td>Docker Desktop 을 실행하고 고래 아이콘이 안정될 때까지 기다린 뒤, IntelliJ 터미널을 닫고 다시 엽니다</td></tr>
 <tr><td><code>gradlew.bat</code> 을 찾을 수 없다고 나옴</td><td>터미널이 shop 폴더가 아닌 곳에서 열림</td><td>터미널에 <code>cd C:\work\shop</code>(본인 위치)을 입력해서 폴더를 옮긴 뒤 다시 실행. IntelliJ 의 Terminal 은 보통 프로젝트 폴더에서 열립니다</td></tr>
 <tr><td>Push 할 때 로그인 창이 계속 뜨거나 <code>Permission denied</code></td><td>GitHub 계정이 IntelliJ 에 연결되지 않음</td><td>7-0 의 GitHub 연결을 다시 하고, 그래도 안 되면 GitHub 에서 본인 계정의 비밀번호 대신 로그인 방식을 확인</td></tr>
-<tr><td>Actions 에 체크 이름이 안 보임</td><td>워크플로가 한 번도 실행되지 않음</td><td>main 에 push 하거나 Actions 탭에서 <b>Run workflow</b> 로 한 번 실행 후 보호 규칙 설정</td></tr>
+<tr><td>Actions 에 체크 이름이 안 보임</td><td>워크플로가 한 번도 실행되지 않음. 특히 <code>shop-ci.yml</code> 이 <b>main</b> 에 없으면 팀원 PR 에서는 실행되지 않음</td><td>main 에 push 하거나 Actions 탭에서 <b>Run workflow</b> 로 한 번 실행 후 보호 규칙 설정</td></tr>
 </table>
 
 <h3>미션 체크</h3>
