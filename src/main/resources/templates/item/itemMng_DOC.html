@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+
+
+<!-- 사용자 스크립트 추가 -->
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+
+        $(document).ready(function(){
+            $("#searchBtn").on("click",function(e) {
+                e.preventDefault();
+                page(0);
+            });
+        });
+
+        function page(page){
+            var searchDateType = $("#searchDateType").val();
+            var searchSellStatus = $("#searchSellStatus").val();
+            var searchBy = $("#searchBy").val();
+            var searchQuery = $("#searchQuery").val();
+
+            location.href="/admin/items/" + page + "?searchDateType=" + searchDateType
+            + "&searchSellStatus=" + searchSellStatus
+            + "&searchBy=" + searchBy
+            + "&searchQuery=" + searchQuery;
+        }
+
+    </script>
+</th:block>
+
+<!-- 사용자 CSS 추가 -->
+<th:block layout:fragment="css">
+    <style>
+        select{
+            margin-right:10px;
+        }
+    </style>
+</th:block>
+
+<!--
+ItemController.java의 itemManage 메소드에서 작성된 model 영역
+
+// 3. model.addAttribute("maxPage", 5);
+//    - 페이징 UI에서 최대 몇 개의 페이지 번호를 한 번에 보여줄지 설정합니다.
+//    - 예: 페이지 하단에 [1] [2] [3] [4] [5] 처럼 최대 5개의 페이지 버튼을 보여주기 위한 값입니다.
+//    - 이 값은 페이징 템플릿에서 반복문 범위를 조절하는 데 사용됩니다.
+model.addAttribute("items", items);                 // 조회된 상품 데이터와 페이징 정보
+model.addAttribute("itemSearchDto", itemSearchDto); // 검색 조건 값
+model.addAttribute("maxPage", 5);                   // 한블록에 보여줄 최대 페이이 번호 수(5개 버튼 노출)
+
+------------------------------------------------------------------------------------------
+
+
+
+아래는 `Spring Data`의 `Page<T>` 객체가 제공하는 **주요 속성들에 대한 자세한 설명표**입니다. 각 속성이 어떤 역할을 하는지 **예시와 함께 상세하게** 정리했습니다.
+
+---
+
+### ✅ `Page<T>` 객체의 속성과 Thymeleaf 표현식 정리
+
+| 표현식                         | 자료형       | 설명                                                    |
+| --------------------------- | --------- | ----------------------------------------------------- |
+| `${items.number}`           | `int`     | 현재 페이지 번호 (0부터 시작)<br>예: 0 = 1페이지, 1 = 2페이지           |
+| `${items.size}`             | `int`     | 한 페이지에 들어가는 항목 수 (page size)<br>예: 10이면 한 페이지에 10개 항목 |
+| `${items.totalPages}`       | `int`     | 전체 페이지 수<br>(전체 항목 수 ÷ 페이지 사이즈) 계산 결과                 |
+| `${items.totalElements}`    | `long`    | 전체 항목 수<br>예: 전체 상품이 123개이면 `123`                     |
+| `${items.first}`            | `boolean` | 현재 페이지가 첫 번째 페이지인지 여부<br>예: `true` 또는 `false`         |
+| `${items.last}`             | `boolean` | 현재 페이지가 마지막 페이지인지 여부<br>예: `true` 또는 `false`          |
+| `${items.empty}`            | `boolean` | 현재 페이지가 비어 있는지 여부 (데이터가 없는 경우 `true`)                 |
+| `${items.getContent()}`     | `List<T>` | 현재 페이지에 해당하는 실제 데이터 리스트<br>예: `List<Item>`            |
+| `${items.numberOfElements}` | `int`     | 현재 페이지에 포함된 항목 수<br>(마지막 페이지에서는 페이지 사이즈보다 작을 수 있음)    |
+| `${items.hasNext()}`        | `boolean` | 다음 페이지가 있는지 여부<br>예: `true` 또는 `false`                |
+| `${items.hasPrevious()}`    | `boolean` | 이전 페이지가 있는지 여부<br>예: `true` 또는 `false`                |
+
+---
+
+### 💡 예시로 보기
+
+만약 총 상품이 57개이고, 페이지 사이즈가 10일 때:
+
+| 표현식                  | 값       | 설명                        |
+| -------------------- | ------- | ------------------------- |
+| `items.totalPages`   | `6`     | 57 ÷ 10 = 5.7 → 올림해서 6페이지 |
+| `items.number`       | `2`     | 현재는 3번째 페이지 (0부터 시작이므로)   |
+| `items.first`        | `false` | 첫 페이지 아님                  |
+| `items.last`         | `false` | 아직 마지막 페이지 아님             |
+| `items.getContent()` | 리스트     | 21\~30번째 항목이 담긴 리스트일 것    |
+
+---
+
+
+-->
+
+<!--layout:fragment="content"는 Thymeleaf에서 레이아웃 템플릿에 끼워넣을 콘텐츠 조각을 정의할 때 사용됩니다.
+     이 프래그먼트는 상위 레이아웃에서 정의된 layout:fragment 위치에 삽입됩니다.-->
+<div layout:fragment="content">
+    <!--
+        th:action="...": Thymeleaf가 form의 action 속성을 동적으로 설정해주는 문법입니다.
+
+        @{...}: Thymeleaf에서 URL을 만드는 전용 문법입니다.
+
+        '/admin/items/' + ${items.number} 설명
+            문자열 'admin/items/' 뒤에 items.number 값을 붙이는 것 → 예를 들어 현재 페이지가 2라면 '/admin/items/2'가 됨
+
+
+        전체 폼 (검색과 페이징을 담당)
+        GET 방식으로 데이터를 요청하며, URL은 "/admin/items/{클릭한 페이지 번호}"가 됩니다.
+
+        th:object="${items}"는 폼 안에서
+        조회된 상품목록 + 페이징정보 + 조회된 상품갯수 가 저장된
+        model에서 꺼내온 Spring Boot에서 제공하는 new PageImpl<>(List<Item>, pageable, total); 객체에 접근 가능하게 합니다.
+
+        ${items.number}는 Spring의 new PageImpl<T> 객체에서 제공하는 현재 클릭한 페이지 번호를 의미합니다.
+
+        클릭한 페이지 번호는 0부터 시작합니다 (즉, [1] 페이지는 0, [2]페이지는 1...).
+    -->
+    <form th:action="@{'/admin/items/' + ${items.number}}" role="form" method="get" th:object="${items}">
+
+        <!-- --------------------- 상품 목록을 보여주는 테이블 시작 ------------------------------------------------------ -->
+        <table class="table">
+            <thead>
+            <tr>
+                <td>상품아이디</td> <!-- item.id -->
+                <td>상품명</td>     <!-- item.itemNm -->
+                <td>상태</td>       <!-- 판매 중인지 품절인지 -->
+                <td>등록자</td>     <!-- 만든 사람 (createdBy) -->
+                <td>등록일</td>     <!-- 만든 날짜 (regTime) -->
+            </tr>
+            </thead>
+
+            <tbody>
+            <!--
+                반복문: 'items.getContent()'는 현재 페이지에 해당하는 상품 리스트를 가져옵니다.
+                - 'items'는 new PageImpl<>(List<Item>, pageable, total); 객체로, 전체 상품을 페이지 단위로 나눈 객체입니다.
+                - getContent()는 그 중 현재 페이지의 "실제 데이터 리스트(List<Item>)"만 꺼냅니다.
+
+                th:each="item, status: ${items.getContent()}"는 아래를 의미합니다:
+                - 'item' : 반복되는 각각의 상품(Item 객체)
+                - 'status' : 반복 상태 정보 (반복 인덱스, 첫 번째인지, 마지막인지 등 제공)
+            -->
+            <tr th:each="item, status: ${items.getContent()}">
+
+                <!--
+                    상품 ID 출력
+                    - item.id는 상품의 고유 번호입니다.
+                    - th:text는 해당 값을 화면에 보여줍니다.
+                    예: <td>1001</td>
+                -->
+                <td th:text="${item.id}"></td>
+
+                <!--
+                    상품명을 링크로 보여줍니다.
+                    - 클릭 시, '/admin/item/{상품ID}' 페이지로 이동합니다.
+                    - 예: /admin/item/1001
+                    - item.itemNm은 상품 이름 (예: "청바지")
+                    -->
+                <td>
+                    <a th:href="'/admin/item/'+${item.id}" th:text="${item.itemNm}"></a>
+                </td>
+
+                <!--
+                    상품 판매 상태 표시
+                    - item.itemSellStatus가 'SELL'이면 "판매중" 출력
+                    - 아니면 "품절" 출력
+                    - 'T(...)'는 Java 클래스나 enum을 참조하는 타임리프 문법입니다.
+                    - 'com.shop.constant.ItemSellStatus'는 enum 클래스 (예: SELL, SOLD_OUT 포함)
+                    -->
+                <td th:text="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL} ? '판매중' : '품절'"></td>
+
+                <!--
+                    등록자 출력
+                    - item.createdBy는 이 상품을 등록한 사용자 이름 (이메일이나 닉네임 등)
+                    -->
+                <td th:text="${item.createdBy}"></td>
+
+                <!--
+                    등록 날짜 출력
+                    - item.regTime은 상품이 등록된 시간 (예: 2025-06-10 14:23:00)
+                    - 기본적으로 LocalDateTime 형태로 저장됨
+                    -->
+                <td th:text="${item.regTime}"></td>
+
+            </tr>
+
+            </tbody>
+        </table>
+
+        <!--
+        페이지 번호 블록 계산 영역입니다.
+            start: 페이지 번호 블록의 시작 번호
+            end: 페이지 번호 블록의 끝 번호
+            maxPage: 한 블록에 보여줄 최대 페이지 수 (예: 1,2,3,4,5   5개의 페이지 번호를 보여주기)
+            예: 현재 페이지가 : items.number = 0 (첫 페이지 1)이고
+                maxPage (한 번에 보여줄 최대 페이지 수) = 5이면  → 1,2,3,4,5 페이지가 보임
+
+            이 값을 기준으로 start와 end가 어떻게 계산되는지 단계별로 설명드릴게요.
+
+               start=${(items.number/maxPage)*maxPage + 1}
+
+               start=${(0           /5      )*      5 + 1}
+                    =               0       *       5 + 1
+                    =                          1
+
+                하단에 보여질  시작 페이지는 1입니다.  <----  1,2,3,4,5 중에  1을 말하는 것임
+
+            -----------
+
+             Thymeleaf에서 페이징 바의 끝 페이지 번호 (end)를 계산하기 위한 논리입니다.
+
+
+                     페이징 바에서 다음과 같은 조건을 만족해야 합니다:
+
+                        조건1. start부터 maxPage만큼 보여줘야 한다.
+                        예: start = 6, maxPage = 5 → [6][7][8][9][10]
+
+                        조건2.단, 총 페이지 수보다 더 많아지면 안 된다.(페이지 번호는 전체 페이지 수 (totalPages)를 초과하면 안 된다.)
+                        예: 총 페이지가 7개인데 [6][7][8][9][10]을 출력하면 안 됨 → [6][7]까지만 출력해야 함
+
+
+                        end 끝페이지 번호 계산
+
+                       📌 가정: 실제 값 대입
+                            예를 들어 다음과 같은 값들이 있다고 해봅시다:
+
+                            | 변수                | 값
+                            | ------------------ | -------------------------------------------------------------------------------
+                            | `items.totalPages` | 12 (전체페이지 수)
+                            | `maxPage`          | 5 (페이지 하단에 보여질 페이지번호 갯수)
+                            | `items.number`     | 6 (현재 페이지 번호)
+                            | `start`            | (items.number / maxPage) \* maxPage + 1 = (6 / 5) \* 5 + 1 = 1 \* 5 + 1 = 6
+
+
+                                (items.totalPages == 0)
+                                  ? 1
+                                  : (start + (maxPage - 1) < items.totalPages
+                                        ? start + (maxPage - 1)
+                                        : items.totalPages)
+
+
+                            ① 먼저 가장 바깥 삼항 연산자 확인:
+                            (items.totalPages == 0) ? 1 : (안쪽 삼항 연산자)
+                            → (12             == 0)     → ❌ false → 그러므로 (안쪽 삼항 연산자) 로 간다
+
+                            ② 이제 (안쪽 삼항 연산자) 부분 계산:
+                            (start + (maxPage - 1) < items.totalPages ? start + (maxPage - 1) : items.totalPages)
+
+                             start + (maxPage - 1) < items.totalPages
+                            → (6   + 4             < 12)
+                            → (10                  < 12) →            ?        true
+
+
+                            마지막으로   start + (maxPage - 1)
+                             end     =  6    +       4
+                             10 <-- 끝 페이지 번호
+
+                             따라서 페이징 바에 나올 숫자는:  [6][7][8][9][10]
+
+
+            Thymeleaf의 th:with는 "변수 선언"에 사용됩니다.
+        -->
+        <div th:with="start=${(items.number/maxPage)*maxPage + 1},
+                      end=(${(items.totalPages == 0) ? 1 : (start + (maxPage - 1) < items.totalPages ? start + (maxPage - 1) : items.totalPages)})">
+          <!--        end=(  (조건식) ? true값 : (조건식  ?  true : false)  )   -->
+
+            <!--
+                페이지 번호 리스트 전체를 감싸는 <ul> 태그
+                Bootstrap의 class="pagination"를 사용해 가운데 정렬
+            -->
+            <ul class="pagination justify-content-center">
+
+                <!--
+                    [이전 페이지] 버튼
+                    - items.first == true이면 현재가 첫 페이지 → 비활성화(disabled)
+                    - th:classappend은 조건에 따라 'disabled' 클래스를 추가
+                -->
+                <li class="page-item" th:classappend="${items.first} ? 'disabled'">
+                    <!--
+                        버튼 클릭 시 자바스크립트의 page(이전 페이지 번호) 함수 실행
+                        - items.number는 현재 페이지 번호 (0부터 시작)
+                        - 이전 페이지는 items.number - 1
+                    -->
+                    <a th:onclick="'javascript:page(' + ${items.number - 1} + ')'"
+                       aria-label="Previous" class="page-link">
+                        <span aria-hidden="true">Previous</span>
+                    </a>
+                </li>
+
+                <!--
+                    페이지 숫자 버튼 반복 출력 (예: 6, 7, 8, 9, 10 등)
+                    - #numbers.sequence(start, end): start부터 end까지 숫자 리스트 생성
+                    - th:each="page : ..." 으로 각 숫자에 대해 반복
+                    - th:classappend: 현재 페이지에 해당하면 'active' 클래스 추가
+                      → 현재 페이지는 강조 표시됨
+                -->
+                <li class="page-item"
+                    th:each="page : ${#numbers.sequence(start, end)}"
+                    th:classappend="${items.number == page - 1} ? 'active' : ''">
+                    <!--
+                        클릭 시 자바스크립트 page(페이지 번호) 함수 실행
+                        - 실제 페이지 번호는 0부터 시작하므로 page - 1로 호출
+                        - th:inline="text": [[${page}]]를 일반 텍스트로 렌더링
+                    -->
+                    <a th:onclick="'javascript:page(' + ${page - 1} + ')'"
+                       th:inline="text" class="page-link">
+                        [[${page}]]
+                    </a>
+                </li>
+
+                <!--
+                    [다음 페이지] 버튼
+                    - items.last == true이면 현재가 마지막 페이지 → 비활성화(disabled)
+                -->
+                <li class="page-item" th:classappend="${items.last} ? 'disabled'">
+                    <!-- 다음 페이지로 이동 (현재 페이지 번호 + 1) -->
+                    <a th:onclick="'javascript:page(' + ${items.number + 1} + ')'"
+                       aria-label="Next" class="page-link">
+                        <span aria-hidden="true">Next</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+
+        <!--
+            🔍 [검색 조건 입력 영역] 입니다.
+            이 폼은 사용자가 상품을 검색할 수 있도록 입력창을 제공합니다.
+
+            🔗 th:object="${itemSearchDto}"
+            => 폼 입력값들을 itemSearchDto 객체와 자동으로 바인딩해줍니다.
+               Spring Controller에서 이 DTO 객체로 값을 받을 수 있게 됩니다.
+        -->
+        <div class="form-inline justify-content-center" th:object="${itemSearchDto}">
+
+            <!--
+                ✅ [등록일 조건 필터]
+                사용자가 최근 1일 / 1주 / 1개월 / 6개월 등의 기간을 선택할 수 있습니다.
+                선택된 값은 itemSearchDto.searchDateType에 들어갑니다.
+            -->
+            <select th:field="*{searchDateType}" class="form-control" style="width:auto;">
+                <option value="all">전체기간</option>    <!-- 제한 없이 전체 검색 -->
+                <option value="1d">1일</option>          <!-- 최근 1일간 등록된 상품 -->
+                <option value="1w">1주</option>          <!-- 최근 1주간 등록된 상품 -->
+                <option value="1m">1개월</option>        <!-- 최근 1개월간 등록된 상품 -->
+                <option value="6m">6개월</option>        <!-- 최근 6개월간 등록된 상품 -->
+            </select>
+<!--
+            🔄 정리: th:field="*{...}"은 어떤 의미?
+            th:object="${itemSearchDto}"가 선언된 내부에서는
+            *{searchQuery}는 실제로는 ${itemSearchDto.searchQuery}와 같은 의미입니다.
+
+            즉, 입력값이 DTO의 해당 필드에 자동으로 바인딩됩니다.
+-->
+            <!--
+                ✅ [판매 상태 조건 필터]
+                판매 중인지, 품절인지로 상품을 필터링합니다.
+                선택된 값은 itemSearchDto.searchSellStatus에 들어갑니다.
+            -->
+            <select th:field="*{searchSellStatus}" class="form-control" style="width:auto;">
+                <option value="">판매상태(전체)</option>  <!-- 필터링 없음 -->
+                <option value="SELL">판매</option>        <!-- 판매중인 상품만 -->
+                <option value="SOLD_OUT">품절</option>    <!-- 품절된 상품만 -->
+            </select>
+
+            <!--
+                ✅ [검색 기준 선택]
+                사용자가 검색할 항목을 선택할 수 있습니다: 상품명 또는 등록자
+                예: 상품명을 "티셔츠"로 검색, 등록자를 "admin"으로 검색 등
+                선택된 값은 itemSearchDto.searchBy에 들어갑니다.
+            -->
+            <select th:field="*{searchBy}" class="form-control" style="width:auto;">
+                <option value="itemNm">상품명</option>
+                <option value="createdBy">등록자</option>
+            </select>
+
+            <!--
+                ✅ [검색어 입력창]
+                사용자가 검색할 텍스트를 입력하는 곳입니다.
+                입력된 텍스트는 itemSearchDto.searchQuery로 바인딩됩니다.
+            -->
+            <input th:field="*{searchQuery}" type="text" class="form-control" placeholder="검색어를 입력해주세요">
+
+            <!--
+                ✅ [검색 버튼]
+                버튼을 누르면 form이 submit되며, 검색 조건을 기반으로 결과를 다시 조회하게 됩니다.
+            -->
+            <button id="searchBtn" type="submit" class="btn btn-primary">검색</button>
+        </div>
+
+
+    </form>
+
+
+</div>
+
+</html>

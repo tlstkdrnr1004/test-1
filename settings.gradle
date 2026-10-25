@@ -1,0 +1,13 @@
+// [shop · Maven → Gradle 전환] settings.gradle : 프로젝트 이름과 플러그인을 내려받을 저장소를 정합니다.
+// pluginManagement : build.gradle 의 plugins { } 에 적은 플러그인(스프링 부트 플러그인 등)을 어디서 받을지 정합니다.
+// mavenCentral() : Maven 의 기본 저장소입니다. 플러그인이 쓰는 라이브러리(jar)를 여기서 받습니다.
+// gradlePluginPortal() : plugins { } 에 적은 플러그인의 위치를 찾는 Gradle 플러그인 전용 저장소입니다.
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// rootProject.name : 프로젝트 이름입니다. pom.xml 의 <artifactId>shop</artifactId> 에 해당합니다.
+rootProject.name = 'shop'

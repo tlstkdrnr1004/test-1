@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<!--
+  Thymeleaf 템플릿에서 사용하는 최상위 html 태그입니다.
+  이 부분에 네임스페이스를 선언해야 아래 태그에서 'th:' 와 'sec:' 접두사를 쓸 수 있습니다.
+
+ 'th:' 접두사 선언입니다.
+  이걸 선언해야 <p th:text="..."> 같은 Thymeleaf 기본 속성을 사용할 수 있습니다.
+  즉, 일반 HTML이 아니라 템플릿 엔진 문법을 해석할 수 있게 됩니다.
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<!--
+  'sec:' 접두사 선언입니다.
+  Spring Security 관련 Thymeleaf 확장 기능을 사용하기 위해 필요합니다.
+  예를 들어 로그인 여부 확인, 권한 체크 등에 쓰이는
+  sec:authorize, sec:authentication 같은 속성을 쓸 수 있게 합니다.
+-->
+
+
+
+<div th:fragment="header"><!-- 다른 페이지에 포함시킬 영역을 th:fragment="header"로 선언해줍니다.-->
+    <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/">Shop</a>
+
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <!--
+                      sec:authorize 속성은 Spring Security + Thymeleaf 기능입니다.
+                      이 태그가 가진 내용을 보여줄지 말지 조건을 제어합니다.
+
+                      여기서는 'hasAnyAuthority('ROLE_ADMIN')' 라고 해서,
+                      로그인한 사용자가 "ROLE_ADMIN" 권한(관리자 권한)을 갖고 있을 때만
+                      이 메뉴(상품 등록 링크, 상품 관리)를 화면에 보여주라는 의미입니다.
+
+                      즉, 관리자만 '상품 등록', '상품 관리' 메뉴를 볼 수 있습니다.
+                -->
+                <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+                    <a class="nav-link" href="/admin/item/new">상품 등록</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+                    <a class="nav-link" href="/admin/items">상품 관리</a>
+                </li>
+                <!--
+                  sec:authorize="isAuthenticated()"는 Spring Security와 Thymeleaf가 함께 제공하는 문법입니다.
+
+                  여기서 isAuthenticated()는 "로그인된 사용자"를 의미합니다.
+                  즉, 이 메뉴는 로그인이 되어 있는 사용자에게만 '장바구니' , '구매이력' 메뉴가 보여집니다.
+                  로그인을 하지 않은 사람(비로그인 사용자)은 이 메뉴를 볼 수 없습니다.
+                -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" href="/cart">장바구니</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" href="/orders">구매이력</a>
+                </li>
+                <!--
+                  sec:authorize="isAnonymous()"는 Thymeleaf + Spring Security의 조건문입니다.
+
+                  'isAnonymous()' 는 로그인하지 않은 사용자를 의미합니다.
+                  즉, 이 메뉴 항목은 **비로그인 상태일 때만** 화면에 표시됩니다.
+
+                  로그인한 사용자는 이 메뉴(로그인 링크)를 볼 수 없습니다.
+                  반대로 로그인하지 않은 사용자만 이 '로그인' 메뉴를 볼 수 있습니다.
+                -->
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a class="nav-link" href="/members/login">로그인</a>
+                </li>
+                <!--
+                  sec:authorize="isAuthenticated()"는 Spring Security와 Thymeleaf가 함께 제공하는 속성입니다.
+
+                  'isAuthenticated()'는 로그인한 사용자를 뜻합니다.
+                  따라서 이 메뉴 항목은 **로그인한 사람에게만 보여집니다**.
+
+                  로그인하지 않은(비회원 또는 비로그인) 사용자는 이 '로그아웃'메뉴를 볼 수 없습니다.
+                -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" href="/members/logout">로그아웃</a>
+                </li>
+            </ul>
+            <!--
+                  th:action="@{/}":
+                    - Thymeleaf 문법입니다.
+                    - 이 폼이 데이터를 전송할 URL을 설정합니다.
+                    - @{/} 는 루트 경로, 즉 `/` 주소로 요청을 보냅니다.
+                    - 결과적으로 검색을 루트 페이지에서 처리하게 됩니다
+            -->
+            <form class="form-inline my-2 my-lg-0" th:action="@{/}" method="get">
+                <input name="searchQuery" class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+</div>
+
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}"> <!-- layout1.html을 기반으로 하는 레이아웃 적용 -->
+
+<!-- 사용자 정의 CSS 스타일을 포함시키는 fragment 정의 -->
+<th:block layout:fragment="css">
+    <style>
+        /* 캐러셀 내부 아이템 높이 지정 */
+        .carousel-inner > .item {
+            height: 350px;
+        }
+
+        /* 각 카드 하단 간격 설정 */
+        .margin {
+            margin-bottom: 30px;
+        }
+
+        /* 배너 이미지의 위치 및 크기 설정 */
+        .banner {
+            height: 300px;
+            position: absolute; top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 카드 내용이 너무 길 경우 말줄임표 처리 */
+        .card-text {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        /* 링크에 마우스를 올렸을 때 밑줄 제거 */
+        a:hover {
+            text-decoration: none;
+        }
+
+        /* 가운데 정렬 클래스 */
+        .center {
+            text-align: center;
+        }
+    </style>
+</th:block>
+
+<!-- 실제 콘텐츠가 들어갈 부분을 정의합니다 (layout:fragment로 레이아웃 파일에 삽입됩니다) -->
+<div layout:fragment="content">
+
+    <!-- 부트스트랩 캐러셀(이미지 슬라이더) 컴포넌트 시작 -->
+    <div id="carouselControls" class="carousel slide margin" data-ride="carousel">
+        <!-- 캐러셀 아이템을 담는 컨테이너 -->
+        <div class="carousel-inner">
+            <!-- 첫 번째 슬라이드 (active 클래스가 있어야 첫 화면에 보임) -->
+            <div class="carousel-item active item">
+                <!-- 배너 이미지 (전체 너비, 배너 클래스 적용) -->
+                <img class="d-block w-100 banner"
+                     src="https://user-images.githubusercontent.com/13268420/112147492-1ab76200-8c20-11eb-8649-3d2f282c3c02.png"
+                     alt="First slide">
+            </div>
+        </div>
+    </div>
+    <!-- 캐러셀 끝 -->
+
+    <!-- 검색어 유지용 히든 필드 (페이징 요청 시 검색어 유지 필요) -->
+    <input type="hidden" name="searchQuery" th:value="${itemSearchDto.searchQuery}">
+
+    <!-- 검색어가 비어있지 않을 경우(검색한 경우)에만 메시지를 보여줌 -->
+    <div th:if="${not #strings.isEmpty(itemSearchDto.searchQuery)}" class="center">
+        <!-- 검색어 + '검색 결과' 출력 -->
+        <p class="h3 font-weight-bold" th:text="${itemSearchDto.searchQuery} + '검색 결과'"></p>
+    </div>
+
+    <!-- 상품 목록을 한 줄에 3개씩 (Bootstrap의 grid system 이용) -->
+    <div class="row">
+        <!-- 반복문으로 items.getContent()에 포함된 상품들을 하나씩 렌더링 -->
+        <th:block th:each="item, status : ${items.getContent()}"> <!-- items는 Page<MainItemDto> -->
+            <div class="col-md-4 margin"> <!-- 한 줄에 3개 (12/4 = 3) -->
+                <div class="card">
+                    <!-- 상품 상세 페이지로 이동하는 링크 (URL: /item/{id}) -  ItemController클래스의 itemDtl 메소드 요청-->
+                    <a th:href="'/item/' + ${item.id}" class="text-dark">
+                        <!-- 상품 대표 이미지 출력 -->
+                        <img th:src="${item.imgUrl}" class="card-img-top"
+                             th:alt="${item.itemNm}" height="400">
+
+                        <!-- 카드 본문: 상품 이름, 상세, 가격 -->
+                        <div class="card-body">
+                            <!-- 상품 이름 -->
+                            <h4 class="card-title">[[${item.itemNm}]]</h4>
+
+                            <!-- 상품 상세 설명: 너무 길 경우 말줄임 표시(css로 처리됨) -->
+                            <p class="card-text">[[${item.itemDetail}]]</p>
+
+                            <!-- 상품 가격 강조 표시 (빨간색) -->
+                            <h3 class="card-title text-danger">[[${item.price}]]원</h3>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </th:block>
+    </div>
+    <!-- 상품 목록 출력 끝 -->
+
+    <!--
+       페이징 처리를 위한 계산 블록입니다.
+       - `items`는 Spring Data JPA의 Page<MainItemDto> 타입 객체입니다.
+       - 페이징은 `maxPage` 단위로 묶어서 출력됩니다 (예: maxPage=5일 경우 1~5, 6~10 등).
+
+       ▼ 변수 설명:
+       - items.number: 현재 페이지 번호 (0부터 시작)
+       - maxPage: 한 번에 보여줄 최대 페이지 수
+       - start: 현재 페이지 그룹의 시작 페이지 번호
+         예: 현재 페이지가 7이고 maxPage가 5라면, 6부터 10까지 페이지가 표시되어야 하므로 start = (7 / 5) * 5 + 1 = 6
+       - end: 현재 페이지 그룹의 마지막 페이지 번호
+         → 총 페이지 수(items.totalPages)를 넘지 않도록 조건 추가
+   -->
+    <div th:with="
+    start=${(items.number / maxPage) * maxPage + 1},
+    end=${
+        (items.totalPages == 0) ? 1 :
+        (start + (maxPage - 1) < items.totalPages ? start + (maxPage - 1) : items.totalPages)
+    }
+">
+
+        <!--
+            Bootstrap 기반 페이징 컴포넌트
+            - 페이지 번호 리스트를 화면 중앙에 정렬 (justify-content-center)
+        -->
+        <ul class="pagination justify-content-center">
+
+            <!--
+                [이전(Previous)] 버튼
+                - 현재 페이지가 첫 페이지(0)인 경우 비활성화(disabled 클래스 추가)
+                - 클릭 시 이전 페이지로 이동 (page 파라미터는 현재 페이지 - 1)
+                - 검색어를 유지하기 위해 searchQuery 파라미터도 함께 전달
+            -->
+            <li class="page-item" th:classappend="${items.number eq 0} ? 'disabled' : ''">
+                <a th:href="@{'/' + '?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${items.number - 1}}"
+                   aria-label="Previous" class="page-link">
+                    <span aria-hidden="true">Previous</span>
+                </a>
+            </li>
+
+            <!--
+                실제 페이지 번호 버튼들 출력
+                - start부터 end까지 반복하면서 각 페이지 번호를 생성
+                - 현재 페이지인 경우 active 클래스 추가하여 강조
+                - 페이지 번호는 1부터 시작하지만, 실제 page 파라미터는 0부터 시작하므로 -1 필요
+            -->
+            <li class="page-item"
+                th:each="page : ${#numbers.sequence(start, end)}"
+                th:classappend="${items.number eq page - 1} ? 'active' : ''">
+                <a th:href="@{'/' + '?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${page - 1}}"
+                   th:inline="text" class="page-link">[[${page}]]</a>
+            </li>
+
+            <!--
+                [다음(Next)] 버튼
+                - 현재 페이지가 마지막 페이지(items.totalPages - 1)일 경우 비활성화
+                - 클릭 시 다음 페이지로 이동 (현재 페이지 + 1)
+                - 검색어 파라미터 유지
+            -->
+            <li class="page-item"
+                th:classappend="${items.number + 1 ge items.totalPages} ? 'disabled' : ''">
+                <a th:href="@{'/' + '?searchQuery=' + ${itemSearchDto.searchQuery} + '&page=' + ${items.number + 1}}"
+                   aria-label="Next" class="page-link">
+                    <span aria-hidden="true">Next</span>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+    <!-- 페이징 처리 끝 -->
+
+
+</div>

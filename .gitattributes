@@ -1,0 +1,4 @@
+# 윈도우에서 체크아웃해도 gradlew 는 리눅스 줄바꿈(LF)을 유지해야 리눅스/GitHub Actions 에서 실행됩니다.
+/gradlew text eol=lf
+*.bat text eol=crlf
+*.jar binary
