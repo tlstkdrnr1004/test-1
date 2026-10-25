@@ -334,7 +334,7 @@ git config --global init.defaultBranch main</pre></div>
 <ol class="steps">
 <li><b>Build, Execution, Deployment → Build Tools → Gradle</b> 로 이동합니다.</li>
 <li><b>Build and run using</b> 과 <b>Run tests using</b> 을 둘 다 <b>Gradle</b> 로 바꿉니다. 이렇게 해야 IntelliJ 실행 결과가 GitHub Actions 와 똑같아집니다.</li>
-<li><b>Gradle JVM</b> 을 <b>JDK 25</b> 로 고릅니다. 목록에 없으면 <b>Download JDK…</b> 에서 Amazon Corretto 25 를 받습니다.</li>
+<li><b>Gradle JVM</b> 을 <b>JDK 25</b> 로 고릅니다. 목록에 없으면 <b>Download JDK…</b> 에서 Amazon Corretto 25 를 받습니다. <b>21</b> 이 먼저 잡혀 있으면(JDK 21 이 PC 에 있는 경우 IntelliJ 가 자동으로 고를 수 있습니다) 드롭다운을 열어 <b>25</b> 로 바꾸세요.</li>
 </ol>
 
 <h3>3-3. 인코딩을 UTF-8 로 맞추기</h3>
@@ -416,7 +416,7 @@ git config --global init.defaultBranch main</pre></div>
 <li>IntelliJ 시작 화면에서 <b>Open</b> 을 누릅니다. 메뉴로는 <b>File → Open…</b>.</li>
 <li><b>build.gradle</b> 파일이 있는 <b>shop 폴더 자체</b>를 고르고 <b>OK</b> 를 누릅니다. 폴더 안의 <code>src</code> 를 고르면 안 됩니다.</li>
 <li><b>Trust Project</b>(프로젝트 신뢰) 창이 뜨면 <b>Trust Project</b> 를 누릅니다.</li>
-<li>Gradle 가져오기 창이 뜨면 <b>Gradle JVM</b> 이 <b>17</b> 인지 확인하고 <b>OK</b> 를 누릅니다. 하단 상태 막대에 <code>Gradle: Import…</code> 와 <code>Indexing…</code> 이 한동안 보이는 것은 정상입니다. 끝날 때까지 기다립니다.</li>
+<li>Gradle 가져오기 창이 뜨면 <b>Gradle JVM</b> 이 <b>25</b> 인지 확인하고 <b>OK</b> 를 누릅니다. 21 이 보이면 25 로 바꾼 뒤 <b>OK</b> 를 누릅니다. 하단 상태 막대에 <code>Gradle: Import…</code> 와 <code>Indexing…</code> 이 한동안 보이는 것은 정상입니다. 끝날 때까지 기다립니다.</li>
 <li>오른쪽 끝의 <b>Gradle</b> 탭을 엽니다 (메뉴: <b>View → Tool Windows → Gradle</b>). 프로젝트 이름 <code>shop</code> 아래 <b>Tasks</b> 가 보이면 성공입니다.</li>
 </ol>
 
