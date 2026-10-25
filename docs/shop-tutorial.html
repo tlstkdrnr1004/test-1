@@ -468,10 +468,11 @@ gradlew.bat test
 <h3>5-2. 애플리케이션 실행</h3>
 <ol class="steps">
 <li>프로젝트 탐색기에서 <code>src/main/java/com/shop/ShopApplication.java</code> 를 엽니다.</li>
-<li><code>public class ShopApplication</code> 줄 왼쪽의 초록색 <b>▶</b> 를 누르고 <b>Run 'ShopApplication'</b> 을 고릅니다. (단축키: 파일을 선택한 뒤 <kbd>Shift</kbd>+<kbd>F10</kbd>, Mac 은 <kbd>⌃</kbd>+<kbd>R</kbd>)</li>
+<li><code>public class ShopApplication</code> 줄 왼쪽의 초록색 <b>▶</b> 를 누르고 <b>Run 'ShopApplication.main()'</b> 을 고릅니다. (메뉴 이름에 <code>.main()</code> 이 붙어도 같은 실행입니다. 상단 툴바의 초록색 ▶ 를 눌러도 됩니다.) (단축키: 파일을 선택한 뒤 <kbd>Shift</kbd>+<kbd>F10</kbd>, Mac 은 <kbd>⌃</kbd>+<kbd>R</kbd>)</li>
 <li>하단 Run 창에서 <code>Tomcat started on port 8081</code> 과 <code>Started ShopApplication</code> 이 보이면 성공입니다.</li>
 <li>브라우저에서 <code>http://localhost:8081</code> 을 엽니다. 쇼핑몰 메인 화면이 보이면 완성 기준 ③ 을 통과한 것입니다.</li>
 </ol>
+<div class="tip"><b>Module JDK is not defined</b> 경고가 파일 위쪽에 보이면 Gradle 프로젝트가 아직 JDK 25 와 연결되지 않은 것입니다. ① 설정 → <b>Project Structure</b> → <b>Project</b> → SDK 를 <b>25</b> 로 고르고 OK, ② Gradle 탭의 새로고침(⟳) 아이콘을 누르고 1~2분 기다립니다. 경고가 사라지고 줄 옆에 ▶ 가 나타나면 됩니다.</div>
 <div class="tip">중지는 Run 창의 빨간 사각형 <b>■</b> 입니다. 포트 8081 이 이미 쓰이는 중이라는 오류가 나면 이전에 켜 둔 실행을 먼저 끄세요.</div>
 
 <h3>5-3. 실행 확인 (수동 테스트 1차)</h3>
