@@ -31,3 +31,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# 상품 이미지 업로드 폴더 (실행할 때 만들어지는 파일이라 git 에 올리지 않습니다)
+shop-uploads/
