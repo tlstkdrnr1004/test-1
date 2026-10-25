@@ -340,14 +340,14 @@ git config --global init.defaultBranch main</pre></div>
 <h3>3-3. 인코딩을 UTF-8 로 맞추기</h3>
 <ol class="steps">
 <li>설정 창에서 <b>Editor → File Encodings</b> 로 이동합니다.</li>
-<li><b>Global Encoding</b>, <b>Project Encoding</b> 을 <b>UTF-8</b> 로 고릅니다.</li>
+<li><b>Global Encoding</b>, <b>Project Encoding</b> 을 <b>UTF-8</b> 로 고릅니다. 칸에 <code>&lt;System Default: UTF-8&gt;</code> 로 보여도 시스템 기본값이 이미 UTF-8 이라 괜찮습니다.</li>
 <li><b>Default encoding for properties files</b> 도 <b>UTF-8</b> 로 고릅니다.</li>
 </ol>
 
 <h3>3-4. 어노테이션 처리(Lombok · QueryDSL) 켜기</h3>
 <ol class="steps">
 <li>설정 창에서 <b>Build, Execution, Deployment → Compiler → Annotation Processors</b> 로 이동합니다.</li>
-<li><b>Enable annotation processing</b> 을 체크합니다. Gradle 프로젝트는 보통 자동으로 체크되어 있습니다.</li>
+<li><b>Enable annotation processing</b> 칸은 <b>건드리지 않습니다.</b> Gradle 프로젝트에서는 이 칸이 회색(비활성)이고 꺼져 있는 것이 정상입니다. Lombok 과 QueryDSL 은 <code>build.gradle</code> 의 <code>annotationProcessor</code> 줄로 Gradle 이 처리하므로, 그 줄들이 있는지만 확인합니다.</li>
 </ol>
 
 <h3>3-5. Git 연결 확인</h3>
@@ -361,7 +361,7 @@ git config --global init.defaultBranch main</pre></div>
 <label class="do"><input type="checkbox" data-mission="s3-1"><span class="do-text">Build and run using 과 Run tests using 이 모두 <b>Gradle</b> 입니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s3-2"><span class="do-text">Gradle JVM 이 <b>JDK 25</b> 입니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s3-3"><span class="do-text">File Encodings 가 모두 <b>UTF-8</b> 입니다.</span></label>
-<label class="do"><input type="checkbox" data-mission="s3-4"><span class="do-text">Enable annotation processing 이 체크되어 있습니다.</span></label>
+<label class="do"><input type="checkbox" data-mission="s3-4"><span class="do-text"><code>build.gradle</code> 에 <code>annotationProcessor</code> 줄(lombok, querydsl-apt 등)이 있습니다. (Enable annotation processing 칸은 Gradle 프로젝트에서 회색이 정상입니다.)</span></label>
 
 <h3>퀴즈</h3>
 <div class="quiz" data-q="q2" data-ans="1">
@@ -1084,7 +1084,7 @@ dependencies {
 <h2><span class="no">14</span>오류 해결 <small>증상 → 원인 → 해결</small></h2>
 <table class="compare">
 <tr><th>증상 (화면·로그)</th><th>원인</th><th>해결</th></tr>
-<tr><td><code>cannot find symbol: method getId()</code> (Lombok 메서드가 안 보임)</td><td>어노테이션 처리가 꺼져 있음</td><td>3-4 를 확인하고, <b>Build → Rebuild Project</b> 후 Gradle 탭에서 Gradle 탭 맨 위의 새로고침(⟳) 아이콘</td></tr>
+<tr><td><code>cannot find symbol: method getId()</code> (Lombok 메서드가 안 보임)</td><td><code>build.gradle</code> 의 <code>annotationProcessor</code> 줄이 없음</td><td>3-4 를 확인하고, <b>Build → Rebuild Project</b> 후 Gradle 탭에서 Gradle 탭 맨 위의 새로고침(⟳) 아이콘</td></tr>
 <tr><td><code>QItem</code>, <code>QMainItemDto</code> 를 찾을 수 없음</td><td>Q 클래스가 아직 생성되지 않음 (Gradle 가 annotationProcessor 를 실행하지 않음)</td><td>Gradle 탭에서 <b>build</b> 한 번 실행 → <code>build/generated/sources/annotationProcessor/java/main</code> 확인 → IntelliJ 재시작</td></tr>
 <tr><td>한글 주석·문자열이 <code>???</code> 또는 깨짐</td><td>인코딩이 UTF-8 이 아님</td><td>3-3 설정 확인 후 파일을 다시 열기. Windows 명령 창은 <code>chcp 65001</code></td></tr>
 <tr><td><code>Communications link failure</code> (DB 연결 실패)</td><td>MySQL 이 꺼져 있거나 3306 포트가 다름</td><td>Docker 면 <code>docker start shop-mysql</code>. 설치판이면 MySQL 서비스 시작. 비밀번호가 0000 인지 확인</td></tr>
