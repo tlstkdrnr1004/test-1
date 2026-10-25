@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shop 심화 자습서 (JPA · OAuth2 · S3 · CI/CD · Spring AI)</title>
+<style>
+  :root { --bg:#fafafa; --fg:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --code:#f6f8fa; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; --ok:#3fb950; --warn:#d29922; --code:#161b22; }
+  }
+  :root[data-theme="dark"] { --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; --ok:#3fb950; --warn:#d29922; --code:#161b22; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.7 -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 1.9rem; margin: .4em 0; }
+  h2 { font-size: 1.4rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; margin-top: 2.2em; }
+  h3 { font-size: 1.1rem; margin-top: 1.6em; color: var(--accent); }
+  h4 { font-size: 1rem; margin-top: 1.2em; }
+  p, li { word-break: keep-all; }
+  code { background: var(--code); padding: .1em .35em; border-radius: 4px; font-size: .92em; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-size: .88rem; }
+  pre code { background: none; padding: 0; }
+  .box { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+  .warn { border-left-color: var(--warn); }
+  .ok { border-left-color: var(--ok); }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .95rem; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--code); }
+  .tag { display: inline-block; font-size: .8rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; margin-right: 4px; }
+  .tag.acc { border-color: var(--warn); color: var(--warn); }
+  .tag.ver { border-color: var(--ok); color: var(--ok); }
+  .task { display: block; margin: 6px 0; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>shop 심화 자습서</h1>
+<p class="muted">JPA(데이터 관리), OAuth2(구글 로그인), AWS S3(파일 저장), CI/CD(자동 테스트·배포), Spring AI(LLM 연동)를 shop 프로젝트에 붙이는 순서를 설명합니다. 기본 흐름은 <a href="shop-flow-tutorial.html">요청 흐름 자습서</a>와 <a href="shop-tutorial.html">설치·Git 자습서</a>를 먼저 끝낸 뒤 진행하세요.</p>
+
+<div class="box warn">
+<b>이 자습서의 범위 (중요)</b>
+<ul>
+  <li>이 문서는 <b>설명 문서</b>입니다. shop 프로젝트의 소스 코드와 의존성(<code>build.gradle</code>)은 이 문서로 바뀌지 않습니다.</li>
+  <li>프로젝트는 <b>Spring Boot 3.3.2</b> 기준입니다. 참고 저장소(책 예제)는 Spring Boot 4.0.1 기준이라 코드가 그대로 맞지 않는 부분이 있습니다. 각 장에 차이를 적었습니다.</li>
+  <li>구글 로그인, AWS, OpenAI(또는 OpenRouter)는 <b>본인 계정과 키가 있어야</b> 실행됩니다. 이 문서를 만든 환경에서는 계정 연결과 실제 실행을 확인하지 못했습니다.</li>
+  <li>AWS 배포와 LLM 호출은 <b>돈이 나갑니다.</b> 사용 후 반드시 정리하세요 (5장, 7장).</li>
+</ul>
+</div>
+
+<h2>표시 읽는 법</h2>
+<p><span class="tag ver">저장소 확인</span> 이 프로젝트 파일에서 직접 확인한 내용입니다.<br>
+<span class="tag acc">계정 필요</span> 본인 계정이나 키가 있어야 하며, 이 문서에서는 실행을 확인하지 않았습니다.<br>
+<span class="tag">설명 예시</span> 따라 하기 쉽게 쓴 예제입니다. 프로젝트에 넣은 뒤 테스트로 확인하세요.</p>
+
+<h2>0. 시작 전 준비</h2>
+
+<h3>0-1. 필요한 계정과 비용</h3>
+<table>
+  <tr><th>항목</th><th>필요한 것</th><th>비용</th><th>언제 필요한가</th></tr>
+  <tr><td>GitHub</td><td>저장소 쓰기 권한 (이미 있음)</td><td>무료</td><td>CI/CD</td></tr>
+  <tr><td>Google Cloud</td><td>OAuth 클라이언트 ID · Secret</td><td>무료 (구글 로그인 기준)</td><td>OAuth2 (3장)</td></tr>
+  <tr><td>AWS</td><td>계정, S3 버킷, Elastic Beanstalk 환경, IAM 사용자 키</td><td><b>과금 발생</b> (사용량 기준)</td><td>S3 (4장), 배포 (5장)</td></tr>
+  <tr><td>OpenAI 또는 OpenRouter</td><td>API 키</td><td><b>사용량 과금</b></td><td>Spring AI (2장)</td></tr>
+</table>
+
+<h3>0-2. 비밀 값(키, 비밀번호) 다루기 규칙</h3>
+<div class="box warn">
+<ul>
+  <li><b>소스 코드와 <code>application.properties</code> 에 실제 키를 쓰지 않습니다.</b></li>
+  <li>shop 저장소는 <b>공개(Public)</b> 입니다. 키가 한 번이라도 올라가면 누구나 볼 수 있습니다. 올라갔다면 즉시 키를 폐기하고 새로 발급하세요.</li>
+  <li>설정 값은 환경변수로 넣습니다. 예: <code>${GOOGLE_CLIENT_ID}</code>, <code>${OPENAI_API_KEY}</code>, <code>${AWS_S3_BUCKET}</code></li>
+  <li>CI/CD 에서는 GitHub 저장소의 <b>Settings → Secrets and variables → Actions → New repository secret</b> 에 등록합니다.</li>
+  <li>책 저장소(<code>springboot-developer-4</code>)의 <code>application.yml</code> 에 실제 키 값이 들어 있다면, 그 키는 공개된 것으로 보고 즉시 교체하세요.</li>
+</ul>
+</div>
+
+<h3>0-3. 공통 확인 명령</h3>
+<pre><code>gradlew.bat test                 # Windows
+./gradlew test                   # macOS, Linux
+gradlew.bat bootRun              # 앱 실행 (Windows)
+./gradlew bootRun                # 앱 실행 (macOS, Linux)</code></pre>
+
+<h2>1. JPA 로 데이터 다루기 (복잡한 SQL 없이)</h2>
+<p class="muted">이 장은 shop 프로젝트에서 이미 쓰는 JPA 기능을 더 깊이 다룹니다. 새 SQL 을 직접 쓰지 않고 메서드 이름과 객체 탐색으로 해결하는 방법입니다.</p>
+
+<h3>1-1. 리포지토리 기본 메서드 <span class="tag ver">저장소 확인</span></h3>
+<p><code>ItemRepository</code> 는 <code>JpaRepository&lt;Item, Long&gt;</code> 를 상속합니다. 이 인터페이스만으로 아래 메서드를 쓸 수 있습니다.</p>
+<table>
+  <tr><th>메서드</th><th>하는 일</th><th>반환 타입</th></tr>
+  <tr><td><code>save(entity)</code></td><td>없으면 INSERT, 있으면 UPDATE</td><td>저장된 엔티티</td></tr>
+  <tr><td><code>findById(id)</code></td><td>기본키로 한 건 조회</td><td><code>Optional&lt;T&gt;</code></td></tr>
+  <tr><td><code>findAll()</code></td><td>전체 조회</td><td><code>List&lt;T&gt;</code></td></tr>
+  <tr><td><code>deleteById(id)</code></td><td>기본키로 삭제</td><td>없음</td></tr>
+  <tr><td><code>count()</code></td><td>전체 개수</td><td><code>long</code></td></tr>
+</table>
+
+<h3>1-2. 메서드 이름으로 조회 (쿼리 작성 없이) <span class="tag">설명 예시</span></h3>
+<p>메서드 이름이 곧 WHERE 조건이 됩니다. 아래 규칙을 따르세요.</p>
+<table>
+  <tr><th>메서드 이름 규칙</th><th>대응하는 SQL 조건</th></tr>
+  <tr><td><code>findByItemNm(String itemNm)</code></td><td><code>WHERE item_nm = ?</code></td></tr>
+  <tr><td><code>findByItemNmContaining(String keyword)</code></td><td><code>WHERE item_nm LIKE '%keyword%'</code></td></tr>
+  <tr><td><code>findByPriceGreaterThan(int price)</code></td><td><code>WHERE price &gt; ?</code></td></tr>
+  <tr><td><code>findByStockNumberLessThan(int n)</code></td><td><code>WHERE stock_number &lt; ?</code></td></tr>
+  <tr><td><code>findByItemSellStatusOrderByPriceDesc(ItemSellStatus s)</code></td><td><code>WHERE item_sell_status = ? ORDER BY price DESC</code></td></tr>
+</table>
+<pre><code class="language-java">// 예시: ItemRepository 인터페이스 안에 메서드 선언만 추가합니다. 구현 코드는 쓰지 않습니다.
+List&lt;Item&gt; findByItemNmContaining(String keyword);
+List&lt;Item&gt; findByPriceGreaterThan(int price);</code></pre>
+<div class="box">
+<b>확인 방법</b> 테스트 클래스에서 <code>@Autowired ItemRepository itemRepository;</code> 를 선언하고, 상품 2개를 저장한 뒤 메서드를 호출해 개수를 <code>assertEquals</code> 로 확인합니다. 테스트 클래스는 <code>src/test/java/com/shop/repository/</code> 에 만듭니다.
+</div>
+
+<h3>1-3. 페이징과 정렬 <span class="tag">설명 예시</span></h3>
+<pre><code class="language-java">import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
+// 페이지 번호는 0부터 시작합니다. 한 페이지에 10건, 가격 높은 순
+PageRequest pageable = PageRequest.of(0, 10, Sort.by("price").descending());
+Page&lt;Item&gt; page = itemRepository.findAll(pageable);
+long total = page.getTotalElements();   // 전체 건수
+List&lt;Item&gt; items = page.getContent();  // 현재 페이지 목록</code></pre>
+<p>shop 프로젝트는 이미 <code>ItemRepositoryCustom</code> 에서 QueryDSL 로 검색과 페이징을 합니다 (<span class="tag ver">저장소 확인</span>). 메서드 이름 방식으로 충분한 경우에는 이 방식을 먼저 쓰세요.</p>
+
+<h3>1-4. 한 번에 가져오기: <code>@EntityGraph</code> <span class="tag">설명 예시</span></h3>
+<p>연관된 엔티티를 나중에 하나씩 조회하면 SQL 이 여러 번 나갑니다(N+1 문제). <code>@EntityGraph</code> 는 필요한 연관 데이터를 한 번에 가져옵니다.</p>
+<pre><code class="language-java">@EntityGraph(attributePaths = {"item"})
+List&lt;ItemImg&gt; findByItemId(Long itemId);</code></pre>
+<p>이 프로젝트의 <code>ItemImgRepository</code> 에는 <code>findByItemIdOrderByIdAsc</code> 가 있습니다 (<span class="tag ver">저장소 확인</span>). 상품 목록 화면에서 이미지가 많아지면 이 방식을 검토하세요.</p>
+
+<h3>1-5. 지연 로딩과 트랜잭션 규칙</h3>
+<ul>
+  <li>연관 관계는 <code>fetch = FetchType.LAZY</code> 로 두는 것이 이 프로젝트의 기본입니다 (<span class="tag ver">저장소 확인</span>: <code>CartItem</code>, <code>OrderItem</code>, <code>Order</code>).</li>
+  <li>조회만 하는 메서드는 <code>@Transactional(readOnly = true)</code> 를 붙입니다 (<span class="tag ver">저장소 확인</span>: <code>ItemService.getItemDtl</code>).</li>
+  <li>화면(Thymeleaf)에서 연관 객체를 꺼낼 때 <code>LazyInitializationException</code> 이 나면, 서비스에서 필요한 값을 DTO 에 담아 돌려주세요.</li>
+</ul>
+
+<h3>1-6. 1장 과제</h3>
+<label class="task"><input type="checkbox"> <code>findByItemNmContaining</code> 을 추가하고 테스트로 검색 결과 개수를 확인했습니다.</label>
+<label class="task"><input type="checkbox"> <code>PageRequest</code> 로 한 페이지 2건씩 나눠 조회하고, 전체 건수가 맞는지 확인했습니다.</label>
+<label class="task"><input type="checkbox"> <code>LazyInitializationException</code> 이 나는 상황을 한 번 만들고, 원인을 한 문장으로 적었습니다.</label>
+
+<h2>2. Spring AI 로 LLM 연동 <span class="tag acc">계정 필요</span></h2>
+<p class="muted">목표: 상품 설명 문장을 LLM 에 보내고, 응답을 화면에 보여 주는 기능을 만듭니다.</p>
+
+<h3>2-1. 준비물</h3>
+<ul>
+  <li>OpenAI 또는 OpenRouter 계정과 API 키 (<span class="tag acc">계정 필요</span>)</li>
+  <li>키를 환경변수로 등록: Windows 명령 프롬프트에서 <code>setx OPENAI_API_KEY "발급받은키"</code> 입력 후 IntelliJ 를 재시작</li>
+</ul>
+
+<h3>2-2. 의존성 추가 <span class="tag">설명 예시</span></h3>
+<p>책 예제는 Spring AI 2.0.0-M1 을 쓰지만, <b>이 프로젝트는 Spring Boot 3.3.2 이므로 Spring AI 1.x 계열을 써야 합니다.</b> 정확한 버전은 Maven Central 에서 Boot 3.3 과 맞는 최신 1.x 를 확인하세요. 버전을 정하지 못했다면 이 장은 진행하지 말고 계정 준비만 끝내세요.</p>
+<pre><code class="language-gradle">// build.gradle 의 dependencies 블록 (버전은 Maven Central 에서 확인한 값으로 씁니다)
+implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:&lt;1.x 버전&gt;'</code></pre>
+
+<h3>2-3. 설정 <span class="tag">설명 예시</span></h3>
+<p><code>application.properties</code> 에 키 자체가 아니라 환경변수 이름만 적습니다.</p>
+<pre><code>spring.ai.openai.api-key=${OPENAI_API_KEY}
+spring.ai.openai.chat.options.model=gpt-4o-mini</code></pre>
+<p class="muted">모델 이름은 계정에서 쓸 수 있는 모델로 바꾸세요. OpenRouter 를 쓴다면 base-url 과 모델 이름도 OpenRouter 문서 값으로 바꿔야 합니다.</p>
+
+<h3>2-4. 서비스 코드 <span class="tag">설명 예시</span></h3>
+<pre><code class="language-java">package com.shop.service;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ItemDescriptionAiService {
+
+    private final ChatClient chatClient;
+
+    // ChatModel 은 Spring AI 가 자동으로 만들어 주는 빈입니다. 생성자로 주입받습니다.
+    public ItemDescriptionAiService(ChatModel chatModel) {
+        this.chatClient = ChatClient.builder(chatModel).build();
+    }
+
+    // 상품명을 받아서 설명 문장을 만들어 돌려줍니다.
+    public String suggestDescription(String itemName) {
+        return chatClient.prompt()
+                .user("다음 상품을 한국어로 두 문장 소개해 주세요: " + itemName)
+                .call()
+                .content();
+    }
+}</code></pre>
+
+<h3>2-5. 컨트롤러와 확인 <span class="tag">설명 예시</span></h3>
+<pre><code class="language-java">@GetMapping("/ai/describe")
+@ResponseBody
+public String describe(@RequestParam String name) {
+    return itemDescriptionAiService.suggestDescription(name);
+}</code></pre>
+<ol>
+  <li>앱을 실행합니다.</li>
+  <li>브라우저에서 <code>http://localhost:8081/ai/describe?name=노트북</code> 을 엽니다.</li>
+  <li>문장이 돌아오면 성공입니다. 오류가 나면 키 설정과 모델 이름을 먼저 확인하세요.</li>
+</ol>
+<div class="box warn"><b>주의</b> <code>/ai/**</code> 는 로그인 없이 호출되면 비용이 쌓입니다. 실습 후 이 컨트롤러를 지우거나, <code>SecurityConfig</code> 에서 <code>/admin/**</code> 과 같이 권한을 거세요.</div>
+
+<h3>2-6. 2장 과제</h3>
+<label class="task"><input type="checkbox"> 환경변수로 키를 넣고, 설정 파일에 키 값이 없음을 확인했습니다.</label>
+<label class="task"><input type="checkbox"> 브라우저에서 응답 문장이 돌아오는 것을 확인했습니다.</label>
+<label class="task"><input type="checkbox"> 호출을 끝낸 뒤 사용량 화면에서 비용이 생긴 것을 확인하고, 불필요한 엔드포인트를 지웠습니다.</label>
+
+<h2>3. OAuth2 구글 로그인 <span class="tag acc">계정 필요</span></h2>
+<p class="muted">목표: "구글로 로그인" 버튼으로 구글 계정 인증을 받고, 최초 로그인 시 회원 정보를 shop 의 <code>member</code> 테이블에 저장합니다.</p>
+
+<h3>3-1. Google Cloud 에서 OAuth 클라이언트 만들기 <span class="tag acc">계정 필요</span></h3>
+<ol>
+  <li>Google Cloud Console(console.cloud.google.com) 에 로그인하고 프로젝트를 만듭니다.</li>
+  <li><b>APIs & Services → OAuth consent screen</b> 에서 외부(External) 사용자 유형을 고르고, 앱 이름과 본인 이메일을 입력합니다.</li>
+  <li><b>APIs & Services → Credentials → Create credentials → OAuth client ID</b> 를 고릅니다.</li>
+  <li>Application type 은 <b>Web application</b> 입니다.</li>
+  <li><b>Authorized redirect URIs</b> 에 다음을 추가합니다.<br>
+    <code>http://localhost:8081/login/oauth2/code/google</code></li>
+  <li>생성 후 나오는 <b>Client ID</b> 와 <b>Client secret</b> 을 복사해 둡니다. 이 값은 파일에 적지 않고 환경변수로 씁니다.</li>
+</ol>
+<div class="box warn"><b>주의</b> 리디렉션 주소의 포트(8081)와 경로(<code>/login/oauth2/code/google</code>)가 한 글자라도 다르면 로그인이 실패합니다.</div>
+
+<h3>3-2. 의존성 추가 <span class="tag ver">저장소 확인</span></h3>
+<pre><code class="language-gradle">implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'</code></pre>
+<p>이 스타터는 Spring Boot 3.3.2 에서도 같은 이름으로 씁니다.</p>
+
+<h3>3-3. 설정 파일 <span class="tag ver">저장소 확인</span></h3>
+<p>책 저장소의 설정 키 이름과 같은 구조입니다. 값은 환경변수로 넣습니다.</p>
+<pre><code>spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID}
+spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET}
+spring.security.oauth2.client.registration.google.scope=email,profile</code></pre>
+
+<h3>3-4. 보안 설정에 추가 <span class="tag">설명 예시</span></h3>
+<p>shop 의 <code>SecurityConfig</code> 는 이미 폼 로그인을 쓰고 있습니다. 구글 로그인은 <b>같이 쓰는 방식으로 추가</b>하세요. 기존 <code>formLogin()</code> 을 지우지 마세요.</p>
+<pre><code class="language-java">// SecurityConfig 의 filterChain 메서드 안, 기존 설정 아래에 추가합니다.
+http.oauth2Login(oauth -> oauth
+        .loginPage("/members/login")                 // 기존 로그인 페이지 재사용
+        .defaultSuccessUrl("/", true)                // 로그인 성공 후 이동할 주소
+        .userInfoEndpoint(info -> info
+                .userService(oAuth2UserService)));   // 아래 3-5 의 서비스</code></pre>
+<p class="muted">메서드 이름과 반환 타입은 Spring Security 버전에 따라 조금 다를 수 있습니다. 컴파일 오류가 나면 해당 버전의 공식 문서 예제를 같이 보세요.</p>
+
+<h3>3-5. 최초 로그인 시 회원 저장 <span class="tag">설명 예시</span></h3>
+<pre><code class="language-java">@Service
+@RequiredArgsConstructor
+public class OAuth2UserService extends DefaultOAuth2UserService {
+
+    private final MemberRepository memberRepository;
+
+    @Override
+    public OAuth2User loadUser(OAuth2UserRequest request) throws OAuth2AuthenticationException {
+        OAuth2User user = super.loadUser(request);
+        String email = user.getAttribute("email");   // 구글이 돌려주는 이메일
+        String name  = user.getAttribute("name");    // 구글이 돌려주는 이름
+
+        // 같은 이메일이 없으면 새 회원으로 저장합니다. (email 은 member 테이블에서 unique)
+        if (memberRepository.findByEmail(email) == null) {
+            // 실제 저장 로직은 Member 엔티티의 생성 메서드(createMember 계열)를 사용하세요.
+            // 구글 로그인 회원은 비밀번호가 없으므로 Member 의 password 설정 방식을 팀에서 정하세요.
+        }
+        return user;
+    }
+}</code></pre>
+<div class="box warn"><b>팀 결정 필요</b> 구글 회원의 <code>password</code> 컬럼 값과 <code>role</code> 기본값은 팀에서 먼저 정하세요. 폼 로그인 회원과 충돌하면 로그인 오류가 납니다.</div>
+
+<h3>3-6. 확인 방법</h3>
+<ol>
+  <li>앱을 실행하고 로그인 페이지에서 "구글로 로그인"을 누릅니다.</li>
+  <li>구글 계정을 고르고 동의하면 메인 화면으로 돌아옵니다.</li>
+  <li><code>SELECT member_id, name, email, role FROM member;</code> 로 회원이 생겼는지 확인합니다.</li>
+  <li>로그아웃 후 다시 로그인해서 중복 회원이 생기지 않는지 확인합니다.</li>
+</ol>
+
+<h3>3-7. 3장 과제</h3>
+<label class="task"><input type="checkbox"> 리디렉션 주소를 정확히 등록했고, 로그인이 성공했습니다.</label>
+<label class="task"><input type="checkbox"> 기존 폼 로그인이 그대로 동작하는지 확인했습니다.</label>
+<label class="task"><input type="checkbox"> 같은 구글 계정으로 두 번 로그인해도 회원이 한 명만 있습니다.</label>
+
+<h2>4. AWS S3 에 이미지 저장 <span class="tag acc">계정 필요</span></h2>
+<p class="muted">현재 shop 은 상품 이미지를 프로젝트 안 <code>shop-uploads/item</code> 폴더에 저장합니다 (<span class="tag ver">저장소 확인</span>: <code>FileService.uploadFile</code>). S3 는 서버 밖에 저장하는 방식입니다. 배포 서버를 여러 대 두거나, 서버를 다시 올려도 파일을 유지하려면 S3 를 씁니다.</p>
+
+<h3>4-1. AWS 준비 <span class="tag acc">계정 필요</span></h3>
+<ol>
+  <li>AWS 콘솔에서 S3 버킷을 만듭니다. 리전은 <code>ap-northeast-2</code>(서울)를 권장합니다.</li>
+  <li>버킷의 <b>Block Public Access</b> 는 켠 채로 둡니다. 파일 접근은 서버가 담당합니다.</li>
+  <li><b>IAM → Users</b> 에서 실습 전용 사용자를 만들고, 권한은 <b>해당 버킷에만 쓰기·읽기</b>로 제한합니다.</li>
+  <li>사용자의 <b>Access key</b> 를 만들고, 키 ID 와 Secret 을 안전한 곳에 복사합니다. 파일에 적지 마세요.</li>
+</ol>
+
+<h3>4-2. 의존성과 설정 <span class="tag">설명 예시</span></h3>
+<pre><code class="language-gradle">// Maven Central 에서 최신 버전을 확인해 씁니다 (책 저장소는 2.41.31 을 사용)
+implementation 'software.amazon.awssdk:s3:&lt;버전&gt;'</code></pre>
+<pre><code>cloud.aws.region=${AWS_REGION}
+cloud.aws.s3.bucket=${AWS_S3_BUCKET}</code></pre>
+<p class="muted">책 저장소의 <code>application.yml</code> 은 <code>cloud.aws.region</code>, <code>cloud.aws.s3.bucket</code> 키를 씁니다 (<span class="tag ver">저장소 확인</span>). 다만 책 저장소의 빌드 파일에는 <code>software.amazon.awssdk:s3</code> 만 있고 별도 Spring Cloud 라이브러리는 없습니다. 그래서 설정 키 이름은 참고만 하고, 실제 빈 생성은 AWS SDK 코드로 직접 작성해야 합니다.</p>
+
+<h3>4-3. 로컬 저장과 S3 저장을 전환하기 (<code>@Profile</code>) <span class="tag">설명 예시</span></h3>
+<pre><code class="language-java">public interface FileStorage {
+    String upload(String originalName, byte[] data) throws Exception;
+}
+
+@Service
+@Profile("local")                     // application-local.properties 를 쓸 때만 동작
+public class LocalFileStorage implements FileStorage {
+    public String upload(String originalName, byte[] data) throws Exception {
+        // 기존 FileService 로직을 그대로 사용합니다.
+        return "local-file-name";
+    }
+}
+
+@Service
+@Profile("prod")                      // 배포 환경에서만 동작
+public class S3FileStorage implements FileStorage {
+    // S3Client 를 주입받아 putObject 로 업로드합니다. 구현은 AWS SDK 문서 예제를 따릅니다.
+    public String upload(String originalName, byte[] data) throws Exception {
+        throw new UnsupportedOperationException("S3 구현 후 제거");
+    }
+}</code></pre>
+<p class="muted">실행 시 프로필은 <code>--spring.profiles.active=local</code> 로 지정합니다. 위 코드의 S3 구현은 골격입니다. 실제 업로드 코드는 AWS SDK 공식 예제로 채우고, 테스트에서 실제 버킷에 쓰지 않도록 주의하세요.</p>
+
+<h3>4-4. 4장 과제</h3>
+<label class="task"><input type="checkbox"> 버킷은 비공개이며, 키는 환경변수로만 넣었습니다.</label>
+<label class="task"><input type="checkbox"> 테스트 전용 파일 하나를 올리고 S3 콘솔에서 보이는 것을 확인한 뒤 삭제했습니다.</label>
+
+<h2>5. AWS 배포 (Elastic Beanstalk) <span class="tag acc">계정 필요</span> <span class="tag">과금 주의</span></h2>
+<p class="muted">책 저장소는 Elastic Beanstalk 에 JAR 를 올리는 방식을 씁니다. 이 장은 개념과 순서만 설명하고, 실제 환경 생성은 계정 준비가 끝난 뒤 진행하세요.</p>
+
+<div class="box warn"><b>비용 경고</b> Elastic Beanstalk 환경은 EC2 인스턴스와 로드 밸런서를 만들며, 실행하는 동안 계속 과금됩니다. 실습이 끝나면 <b>환경을 Terminate</b> 하세요. 남은 S3 버킷과 IAM 키도 확인해서 지우세요 (7장).</div>
+
+<h3>5-1. 순서</h3>
+<ol>
+  <li>AWS 콘솔에서 <b>Elastic Beanstalk → Create application</b>. 플랫폼은 <b>Java</b> 를 고르고, 버전은 프로젝트가 쓰는 Java 버전에 맞춥니다. (이 프로젝트는 빌드 JDK 25, 바이트코드 출력 21 입니다 (<span class="tag ver">저장소 확인</span>: <code>build.gradle</code>))</li>
+  <li>환경 이름을 정합니다. 책 저장소 예: <code>Springboot-developer-env</code>. 팀은 자기 이름을 붙여 바꾸세요.</li>
+  <li>샘플 JAR 로 환경이 올라오는지 확인합니다.</li>
+  <li>JAR 를 직접 업로드하거나, 6장의 GitHub Actions 로 자동 배포합니다.</li>
+  <li>접속 주소로 응답이 오는지 확인합니다.</li>
+</ol>
+
+<h3>5-2. 배포 후 확인</h3>
+<ul>
+  <li>Elastic Beanstalk 콘솔의 환경 상태가 <b>Ok</b> 인지 확인합니다.</li>
+  <li>이벤트 탭에서 실패 로그를 확인합니다.</li>
+  <li>브라우저에서 환경의 URL 로 메인 화면을 엽니다.</li>
+</ul>
+
+<h2>6. CI/CD (GitHub Actions 자동 테스트·배포)</h2>
+<p class="muted">shop 은 이미 CI(자동 테스트)가 있습니다. 파일은 <code>.github/workflows/shop-ci.yml</code> 입니다 (<span class="tag ver">저장소 확인</span>). 여기에 배포 단계를 추가하는 방법을 설명합니다.</p>
+
+<h3>6-1. 지금 있는 CI 의 역할</h3>
+<ul>
+  <li>PR 과 <code>main</code> push 때 <code>build-and-test</code> 작업이 돌고, <code>./gradlew test</code> 를 실행합니다.</li>
+  <li>테스트 결과를 PR 체크(✔/✘)로 보여 줍니다.</li>
+</ul>
+
+<h3>6-2. 책 저장소 워크플로의 주의점 <span class="tag ver">저장소 확인</span></h3>
+<p>책 저장소의 <code>cicd.yml</code> 은 <code>on: push</code> 로만 되어 있어서, <b>어떤 브랜치에 push 해도 배포가 돕니다.</b> 팀 프로젝트에서는 이렇게 두면 작업 브랜치마다 운영 서버가 바뀝니다. 배포는 <code>main</code> 에서만 돌리세요.</p>
+
+<h3>6-3. 배포 단계 추가 <span class="tag acc">계정 필요</span> <span class="tag">설명 예시</span></h3>
+<p>아래는 <code>shop-ci.yml</code> 에 배포 작업을 <b>따로</b> 추가하는 예입니다. 기존 <code>build-and-test</code> 는 그대로 두세요.</p>
+<pre><code class="language-yaml">  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' &amp;&amp; github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '25'
+      - name: 빌드
+        run: |
+          chmod +x gradlew
+          ./gradlew bootJar -x test
+      - name: Elastic Beanstalk 배포
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: shop-app
+          environment_name: shop-app-env
+          version_label: shop-${{ github.run_number }}
+          region: ap-northeast-2
+          deployment_package: build/libs/shop-0.0.1-SNAPSHOT.jar</code></pre>
+<div class="box warn">
+<ul>
+  <li><code>deployment_package</code> 의 JAR 파일명은 <code>build/libs</code> 에 실제로 생긴 이름과 같아야 합니다. 빌드 후 <code>ls build/libs</code> 로 확인하세요.</li>
+  <li>액션 버전(<code>@v22</code> 등)은 GitHub Marketplace 에서 최신 버전을 확인하세요. 이 문서는 버전이 바뀌었는지 검증하지 않았습니다.</li>
+  <li>Secrets 는 저장소 Settings → Secrets and variables → Actions 에 등록합니다. 워크플로 파일에 키를 쓰지 않습니다.</li>
+</ul>
+</div>
+
+<h3>6-4. 6장 확인 방법</h3>
+<ol>
+  <li>작업 브랜치에서 PR 을 만들면 <code>build-and-test</code> 만 돌고 배포는 안 돌아야 합니다.</li>
+  <li>PR 을 <code>main</code> 에 머지하면 <code>deploy</code> 가 돌고, Actions 화면에서 성공을 확인합니다.</li>
+  <li>Elastic Beanstalk 콘솔에서 새 버전 라벨(<code>shop-번호</code>)이 배포됐는지 확인합니다.</li>
+</ol>
+
+<h2>7. 비용과 보안 정리 체크리스트</h2>
+<label class="task"><input type="checkbox"> 실습 후 Elastic Beanstalk 환경을 Terminate 했습니다.</label>
+<label class="task"><input type="checkbox"> S3 버킷의 테스트 파일을 지우고, 버킷을 필요 없으면 삭제했습니다.</label>
+<label class="task"><input type="checkbox"> 실습용 IAM 사용자의 Access key 를 비활성화하거나 삭제했습니다.</label>
+<label class="task"><input type="checkbox">OpenAI·OpenRouter 사용량 화면에서 비용을 확인하고, 한도를 설정했습니다.</label>
+<label class="task"><input type="checkbox">구글 Client secret 을 새로 발급받은 경우, 이전 값을 폐기했습니다.</label>
+<label class="task"><input type="checkbox">저장소 어디에도 키 값이 없는지 <code>git grep -i "secret\|api-key"</code> 로 확인했습니다.</label>
+
+<h2>8. 팀 역할과 진행 순서</h2>
+<table>
+  <tr><th>순서</th><th>장</th><th>담당 예시</th><th>끝났다는 증거</th></tr>
+  <tr><td>1</td><td>1장 JPA 심화</td><td>팀원 3</td><td>검색·페이징 테스트 통과 PR</td></tr>
+  <tr><td>2</td><td>3장 구글 로그인</td><td>팀원 2</td><td>로그인 후 member 행 생성 캡처</td></tr>
+  <tr><td>3</td><td>2장 Spring AI</td><td>팀원 1</td><td>응답 문장이 화면에 나온 캡처 (비용 확인 포함)</td></tr>
+  <tr><td>4</td><td>4장 S3 저장</td><td>팀원 1</td><td>S3 콘솔에 업로드 파일 캡처</td></tr>
+  <tr><td>5</td><td>6장 CI/CD</td><td>팀장</td><td>main 머지 후 deploy 성공 캡처</td></tr>
+  <tr><td>6</td><td>5장 배포 · 7장 정리</td><td>팀장 + 전원</td><td>환경 Terminate 캡처, 체크리스트 완료</td></tr>
+</table>
+<div class="box">
+<b>순서가 중요한 이유</b> 3장(구글 로그인)은 회원 테이블 구조를 알아야 하므로 1장 다음입니다. 5장(배포)은 로그인과 AI 기능이 로컬에서 먼저 돌아야 합니다. CI/CD 는 마지막에 붙입니다.
+</div>
+
+<h2>9. 이 문서의 한계 (반드시 읽기)</h2>
+<ul>
+  <li><b>검증하지 않은 것</b>: 구글 로그인 화면, AWS 콘솔 메뉴 이름, Spring AI 와 OpenRouter 설정, GitHub Actions 배포 단계는 이 문서를 만든 환경에서 실제로 실행하지 않았습니다. 콘솔 화면은 자주 바뀌므로 메뉴 이름이 다를 수 있습니다.</li>
+  <li><b>버전</b>: Spring AI, AWS SDK, 배포 액션의 버전은 여기 적힌 값을 그대로 쓰지 말고, 공식 문서나 Maven Central 에서 Spring Boot 3.3.2 와 맞는 값을 확인하세요.</li>
+  <li><b>프로젝트와의 차이</b>: 책 예제는 Spring Boot 4.0.1 과 Java 25 툴체인을 씁니다. shop 은 Spring Boot 3.3.2 와 <code>release 21</code> 입니다. 책 코드를 그대로 복사하면 컴파일이 안 될 수 있습니다.</li>
+  <li><b>이 문서는 프로젝트 코드를 바꾸지 않았습니다.</b> 실제 적용은 팀이 별도 브랜치에서 PR 로 진행합니다.</li>
+</ul>
+
+</main>
+</body>
+</html>
