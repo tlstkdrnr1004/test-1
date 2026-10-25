@@ -167,6 +167,97 @@
 </table>
 <p class="muted">팀원은 각자 브랜치를 만들어 작업하고, 끝나면 PR 을 올립니다. 기존 자습서 7~10장의 푸시·PR·충돌 해결 방법을 따릅니다.</p>
 
+<h2>9. 팀 프로젝트 진행 방법 (처음 시작하는 팀용)</h2>
+<p class="muted">JPA 를 처음 쓰는 팀을 위한 장입니다. 이 프로젝트는 이미 완성되어 있으므로, DB 를 처음부터 설계하기보다 <b>기존 구조를 이해하고 기능을 나눠 맡는 방식</b>으로 진행합니다.</p>
+
+<h3>9-1. 담당 나누기 (기능 단위)</h3>
+<p>한 명이 한 기능의 파일 묶음 전체를 맡습니다. 같은 파일을 여러 명이 동시에 고치면 충돌이 나기 때문입니다.</p>
+<table>
+  <tr><th>담당</th><th>기능</th><th>맡는 파일 (순서대로)</th></tr>
+  <tr><td>팀장</td><td>상품 등록 (관리자), 전체 점검</td><td><code>ItemController</code>, <code>ItemService</code>, <code>ItemImgService</code>, <code>FileService</code>, <code>Item</code>, <code>ItemImg</code></td></tr>
+  <tr><td>팀원 1</td><td>상품 조회 · 메인 화면</td><td><code>MainController</code>, <code>ItemRepositoryCustom</code>, <code>main.html</code>, <code>item/itemDtl.html</code></td></tr>
+  <tr><td>팀원 2</td><td>회원 · 로그인</td><td><code>MemberController</code>, <code>MemberService</code>, <code>Member</code>, <code>member/memberForm.html</code></td></tr>
+  <tr><td>팀원 3</td><td>장바구니 · 주문</td><td><code>CartController</code>, <code>CartService</code>, <code>OrderController</code>, <code>OrderService</code>, <code>Cart</code>, <code>CartItem</code>, <code>Order</code>, <code>OrderItem</code></td></tr>
+</table>
+<div class="box warn"><b>규칙 두 가지</b>
+<ul>
+  <li><b>엔티티(<code>entity</code> 폴더)를 고칠 때는 팀에 먼저 알립니다.</b> 테이블 구조가 바뀌면 모두에게 영향이 가기 때문입니다.</li>
+  <li><b>화면 파일(<code>templates</code>)과 자바 파일은 같은 사람이 맡습니다.</b> 화면이 기대하는 값과 컨트롤러가 넘기는 값이 어긋나는 실수가 많습니다.</li>
+</ul>
+</div>
+
+<h3>9-2. DB 는 어떻게 시작하나</h3>
+<h4>JPA 는 "자바 클래스 하나 = 테이블 하나"입니다</h4>
+<p><code>@Entity</code> 가 붙은 클래스 하나가 DB 테이블 하나와 연결됩니다.</p>
+<table>
+  <tr><th>엔티티 (자바)</th><th>테이블</th><th>관계</th></tr>
+  <tr><td><code>Member</code></td><td><code>member</code></td><td>회원 한 명</td></tr>
+  <tr><td><code>Item</code></td><td><code>item</code></td><td>상품 하나</td></tr>
+  <tr><td><code>ItemImg</code></td><td><code>item_img</code></td><td>상품 1 : 사진 N (<code>ItemImg</code> → <code>Item</code>)</td></tr>
+  <tr><td><code>Cart</code></td><td><code>cart</code></td><td>회원 1 : 장바구니 1 (<code>Cart</code> → <code>Member</code>)</td></tr>
+  <tr><td><code>CartItem</code></td><td><code>cart_item</code></td><td>장바구니 1 : 담긴 상품 N</td></tr>
+  <tr><td><code>Order</code></td><td><code>orders</code></td><td>회원 1 : 주문 N (<code>Order</code> → <code>Member</code>)</td></tr>
+  <tr><td><code>OrderItem</code></td><td><code>order_item</code></td><td>주문 1 : 주문 상품 N</td></tr>
+</table>
+<p class="muted"><code>order</code> 는 SQL 예약어라서 테이블 이름을 <code>orders</code> 로 바꿔 둔 것입니다.</p>
+
+<h4>테이블은 직접 만들지 않아도 됩니다</h4>
+<p><code>application.properties</code> 의 <code>spring.jpa.hibernate.ddl-auto=update</code> 설정 때문에, 앱을 실행하면 엔티티를 보고 테이블이 자동으로 만들어집니다. 학생이 <code>CREATE TABLE</code> 을 직접 쓸 필요가 없습니다.</p>
+<div class="box warn"><b>주의</b> 테스트 설정(<code>application-test.properties</code>)은 <code>create</code> 라서 실행할 때마다 테이블을 지우고 다시 만듭니다. 데이터를 넣어 둔 DB 에서 테스트를 돌리면 데이터가 사라집니다.</div>
+
+<h4>시작 순서</h4>
+<ol>
+  <li>MySQL 에 <code>shop</code> DB 만들기 (1장·2장)</li>
+  <li>앱 한 번 실행하기 (<code>ShopApplication</code> 실행)</li>
+  <li>MySQL Workbench 에서 <code>shop</code> 을 열고 테이블 7개가 생겼는지 확인하기</li>
+  <li>회원가입과 상품 등록으로 데이터를 넣고, <code>select * from item;</code> 같은 SQL 로 확인하기</li>
+</ol>
+
+<h4>기능을 만드는 순서 (모든 기능 공통)</h4>
+<div class="flow">
+  <span>엔티티</span><i>→</i><span>리포지토리</span><i>→</i><span>서비스</span><i>→</i><span>컨트롤러</span><i>→</i><span>화면</span><i>→</i><span>테스트</span>
+</div>
+<p>이 순서를 지키면 "지금 어디를 고치는지"가 분명해집니다. 예를 들어 상품 상세가 안 나오면 화면보다 먼저 <code>ItemService.getItemDtl</code> 이 값을 제대로 주는지 확인하세요.</p>
+
+<h3>9-3. JPA 입문에 필요한 개념 다섯 가지</h3>
+<table>
+  <tr><th>개념</th><th>한 줄 설명</th><th>이 프로젝트 예시</th></tr>
+  <tr><td>엔티티</td><td>DB 한 줄을 자바 객체로 옮긴 것</td><td><code>Item</code> 클래스</td></tr>
+  <tr><td>리포지토리</td><td>DB 를 읽고 쓰는 통로 (<code>save</code>, <code>findById</code> 는 JPA 가 제공)</td><td><code>ItemRepository</code></td></tr>
+  <tr><td>외래키 <code>@ManyToOne</code></td><td>"이 주문 상품은 어느 주문에 속하나"를 나타내는 연결</td><td><code>OrderItem</code> 안의 <code>order</code> 필드</td></tr>
+  <tr><td>지연 로딩 <code>LAZY</code></td><td>연결된 데이터를 필요할 때만 가져오는 설정</td><td><code>@ManyToOne(fetch = LAZY)</code> (이름만 알고 넘어가도 됨)</td></tr>
+  <tr><td>트랜잭션 <code>@Transactional</code></td><td>여러 DB 작업을 "전부 성공 또는 전부 취소"로 묶음</td><td><code>ItemService</code> 클래스 위</td></tr>
+</table>
+
+<h3>9-4. 매번 같은 순서로 진행하기</h3>
+<ol>
+  <li><code>main</code> 을 받아옵니다. (IntelliJ: <b>Git → Update Project</b>)</li>
+  <li>작업 브랜치를 만듭니다. 예: <code>feature/member-login</code></li>
+  <li>작은 단위로 수정하고 커밋합니다. 한 커밋에는 한 가지 변경만 담습니다.</li>
+  <li>푸시 전에 <code>./gradlew test</code> 를 돌려 테스트가 통과하는지 확인합니다.</li>
+  <li>GitHub 에서 PR 을 만들고 팀장에게 리뷰를 요청합니다. PR 에서 <code>build-and-test</code> 가 ✔ 인지 확인합니다.</li>
+  <li>리뷰가 끝나면 머지하고, 다음 작업 전에 <code>main</code> 을 다시 받아옵니다.</li>
+</ol>
+<div class="box tip"><b>충돌이 나면</b> 당황하지 마세요. 충돌 파일을 열어 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> 표시를 지우고 두 내용이 모두 맞는지 확인합니다. 모르겠으면 팀장에게 묻고, 혼자 <code>main</code> 을 강제로 덮어쓰지 않습니다.</div>
+
+<h3>9-5. 4주 계획 예시</h3>
+<table>
+  <tr><th>주차</th><th>할 일</th></tr>
+  <tr><td>1주차</td><td>설치, DB 준비, 앱 실행 (1장·2장·4장). 각자 담당 흐름 읽기</td></tr>
+  <tr><td>2주차</td><td>담당 흐름의 과제 완료 (위 체크리스트). 첫 PR 올리기</td></tr>
+  <tr><td>3주차</td><td>기능 하나 추가 (예: 상품 검색 조건 추가, 회원 정보 수정). 테스트 1개 이상 작성</td></tr>
+  <tr><td>4주차</td><td>전체 확인 (6장 체크리스트), 발표, 발견한 버그 정리</td></tr>
+</table>
+
+<h3>9-6. 처음에 자주 막히는 곳</h3>
+<table>
+  <tr><th>증상</th><th>확인할 것</th></tr>
+  <tr><td><code>Communications link failure</code></td><td>MySQL 이 꺼져 있음. MySQL 을 켠 뒤 다시 실행</td></tr>
+  <tr><td>테이블이 안 생김</td><td><code>shop</code> DB 를 만들었는지, 앱을 한 번 실행했는지 확인</td></tr>
+  <tr><td>화면에 데이터가 안 나옴</td><td>컨트롤러의 <code>model.addAttribute</code> 이름과 화면의 <code>th:</code> 이름이 같은지 확인</td></tr>
+  <tr><td>충돌이 자주 남</td><td>담당을 더 잘게 나누거나, 같은 파일을 두 명이 맡지 않도록 조정</td></tr>
+</table>
+
 </main>
 </body>
 </html>
