@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>shop 요청 흐름 자습서 (브라우저 → 화면)</title>
+<style>
+  :root { --bg:#fafafa; --fg:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --code:#f6f8fa; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; --ok:#3fb950; --warn:#d29922; --code:#161b22; }
+  }
+  :root[data-theme="dark"] { --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --line:#30363d; --accent:#4493f8; --ok:#3fb950; --warn:#d29922; --code:#161b22; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.7 -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 1.9rem; margin: .4em 0; }
+  h2 { font-size: 1.4rem; border-bottom: 2px solid var(--line); padding-bottom: .3em; margin-top: 2.2em; }
+  h3 { font-size: 1.1rem; margin-top: 1.6em; color: var(--accent); }
+  p, li { word-break: keep-all; }
+  code { background: var(--code); padding: .1em .35em; border-radius: 4px; font-size: .92em; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; }
+  pre code { background: none; padding: 0; }
+  .box { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+  .tip { border-left-color: var(--ok); }
+  .warn { border-left-color: var(--warn); }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 14px 0; font-size: .95rem; }
+  .flow span { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; }
+  .flow i { font-style: normal; color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .95rem; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--code); }
+  .task { display: block; margin: 6px 0; }
+  .muted { color: var(--muted); }
+  nav a { margin-right: 10px; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>shop 요청 흐름 자습서</h1>
+<p class="muted">브라우저에서 버튼을 누르면 서버 안에서 어떤 파일이 어떤 순서로 실행되고, 결과가 다시 화면으로 돌아오는지를 단계별로 따라가는 자습서입니다. 팀원 한 명이 한 흐름씩 맡아서 진행합니다.</p>
+
+<div class="box">
+<b>이 자습서로 할 수 있는 것</b>
+<ul>
+  <li>shop.zip 을 IntelliJ 로 열고, 요청 하나가 지나가는 파일 순서를 손으로 따라갑니다.</li>
+  <li>각 파일에서 <b>무엇을 하는 코드인지</b> 확인하고, 작은 수정(과제)을 직접 해 봅니다.</li>
+  <li>마지막에 4가지 기능(상품 등록, 상품 조회, 회원가입, 장바구니·주문)이 모두 동작하는지 확인합니다.</li>
+</ul>
+<b>주의</b>: shop.zip 안에는 이미 완성된 코드가 들어 있습니다. 이 자습서는 빈 파일에서 코드를 처음부터 타이핑하는 방식이 아니라, <b>완성된 코드를 요청 순서대로 읽고 확인하고 고치는 방식</b>입니다. 설치와 프로젝트 열기는 <a href="shop-tutorial.html">shop 팀 프로젝트 자습서</a>(1~5장)를 먼저 따라 주세요.
+</div>
+
+<h2>0. 시작 전 준비</h2>
+<ol>
+  <li>shop.zip 을 풀고, <code>build.gradle</code> 이 있는 <b>shop 폴더</b>를 IntelliJ 로 엽니다. (자세한 방법은 기존 자습서 4장)</li>
+  <li>MySQL 에 <code>shop</code> 데이터베이스가 있어야 합니다. (기존 자습서 2장)</li>
+  <li><code>src/main/java/com/shop/ShopApplication.java</code> 의 <code>main</code> 을 실행하고, 브라우저에서 <code>http://localhost:8081</code> 이 열리는지 확인합니다.</li>
+</ol>
+<div class="box tip"><b>기억할 점</b> 이 프로젝트는 <b>Spring Boot</b> 로 만든 웹 서버입니다. 브라우저 주소창에 입력하거나 버튼을 누르면 서버의 <b>컨트롤러</b>가 요청을 받고, 필요한 일은 <b>서비스</b>에 맡기고, 데이터는 <b>리포지토리</b>를 거쳐 DB 에서 가져옵니다. 결과는 <b>HTML 템플릿</b>(화면)으로 돌아갑니다.</div>
+
+<h2>1. 한눈에 보는 요청 흐름</h2>
+<p>거의 모든 기능이 아래 같은 순서로 움직입니다.</p>
+<div class="flow">
+  <span>브라우저</span><i>→</i><span>Controller<br><small>요청을 받음</small></span><i>→</i><span>Service<br><small>업무 규칙</small></span><i>→</i><span>Repository<br><small>DB 읽기·쓰기</small></span><i>→</i><span>Entity<br><small>테이블과 연결된 객체</small></span>
+</div>
+<div class="flow">
+  <span>Entity / DTO</span><i>→</i><span>Controller 가 Model 에 담음</span><i>→</i><span>Thymeleaf 템플릿<br><small>templates/*.html</small></span><i>→</i><span>브라우저 화면</span>
+</div>
+<table>
+  <tr><th>이름</th><th>파일 위치</th><th>한 줄 설명</th></tr>
+  <tr><td>Controller</td><td><code>src/main/java/com/shop/controller</code></td><td>"어떤 주소로 요청이 왔는지" 받아서 처리를 시키는 곳</td></tr>
+  <tr><td>Service</td><td><code>src/main/java/com/shop/service</code></td><td>실제 업무 규칙(중복 확인, 재고 줄이기, 저장 등)을 하는 곳</td></tr>
+  <tr><td>Repository</td><td><code>src/main/java/com/shop/repository</code></td><td>DB 에서 찾고 저장하는 일을 맡는 곳</td></tr>
+  <tr><td>Entity</td><td><code>src/main/java/com/shop/entity</code></td><td>DB 테이블 한 줄과 같은 자바 객체</td></tr>
+  <tr><td>DTO</td><td><code>src/main/java/com/shop/dto</code></td><td>화면과 주고받는 데이터 상자(입력 폼, 화면 표시용)</td></tr>
+  <tr><td>Template</td><td><code>src/main/resources/templates</code></td><td>브라우저에 보여 줄 HTML 화면</td></tr>
+</table>
+
+<h2>2. 흐름 A · 상품 등록 (관리자)</h2>
+<p class="muted">담당 예시: 팀원 1. 상품 등록 화면을 열고, 상품과 사진을 올려 저장하는 흐름입니다.</p>
+
+<h3>A-1. 등록 화면 열기 — <code>GET /admin/item/new</code></h3>
+<ol>
+  <li>브라우저가 <code>/admin/item/new</code> 를 요청합니다.</li>
+  <li><b>ItemController.itemForm</b> 이 빈 입력 상자(<code>ItemFormDto</code>)를 만들어 화면에 넘깁니다.</li>
+  <li>화면 파일 <code>templates/item/itemForm.html</code> 이 열립니다.</li>
+</ol>
+
+<h3>A-2. 등록 버튼 누르기 — <code>POST /admin/item/new</code></h3>
+<ol>
+  <li>입력값과 사진이 서버로 전송됩니다.</li>
+  <li><b>ItemController.itemNew</b> 가 받습니다. 먼저 입력값이 빠지지 않았는지(<code>@Valid</code>) 확인하고, 첫 번째 사진이 있는지 확인합니다.</li>
+  <li><b>ItemService.saveItem</b> 을 호출합니다. 여기서 <code>ItemFormDto.createItem()</code> 으로 <code>Item</code> 객체를 만들고 <code>itemRepository.save(item)</code> 으로 DB 에 저장합니다.</li>
+  <li>사진마다 <b>ItemImgService.saveItemImg</b> 를 호출하고, 그 안에서 <b>FileService.uploadFile</b> 이 사진을 저장 폴더에 씁니다.</li>
+  <li>성공하면 <code>redirect:/</code> 로 메인 화면으로 돌아갑니다.</li>
+</ol>
+<div class="box warn"><b>저장 위치</b> 사진은 프로젝트 안 <code>shop-uploads/item</code> 폴더에 저장됩니다. 이 폴더는 처음에 없어도 업로드할 때 자동으로 만들어집니다. (설정: <code>application.properties</code> 의 <code>itemImgLocation</code>)</div>
+
+<h3>A-3. 과제</h3>
+<label class="task"><input type="checkbox"> <code>ItemController.itemNew</code> 에서 가장 먼저 실행되는 검사 두 가지를 말할 수 있습니다. (입력값 검사, 첫 사진 검사)</label>
+<label class="task"><input type="checkbox"> <code>ItemService.saveItem</code> 에서 <code>itemRepository.save(item)</code> 이 실행된 뒤에 사진이 저장되는 이유를 설명할 수 있습니다. (상품 번호가 먼저 있어야 사진이 상품과 연결되기 때문)</label>
+<label class="task"><input type="checkbox"> 브라우저에서 상품 하나를 등록하고, <code>shop-uploads/item</code> 폴더에 사진 파일이 생겼는지 확인했습니다.</label>
+<label class="task"><input type="checkbox"> 첫 번째 사진을 빼고 등록을 눌러 보고, 에러 메시지가 나오는지 확인했습니다.</label>
+
+<h2>3. 흐름 B · 상품 상세 보기 (고객)</h2>
+<p class="muted">담당 예시: 팀원 2. 메인 화면에서 상품을 눌렀을 때 상세 화면이 나오는 흐름입니다.</p>
+<ol>
+  <li>브라우저가 <code>GET /item/{itemId}</code> 를 요청합니다.</li>
+  <li><b>ItemController.itemDtl</b> 이 <code>itemId</code> 를 받아 <b>ItemService.getItemDtl</b> 을 호출합니다.</li>
+  <li>서비스는 <code>itemImgRepository.findByItemIdOrderByIdAsc</code> 로 사진 목록을, <code>itemRepository.findById</code> 로 상품을 가져옵니다.</li>
+  <li>가져온 값을 <code>ItemFormDto</code> 에 모아 <code>item</code> 이라는 이름으로 화면에 넘깁니다.</li>
+  <li><code>templates/item/itemDtl.html</code> 이 그려집니다.</li>
+</ol>
+<h3>B-1. 과제</h3>
+<label class="task"><input type="checkbox"> 없는 번호(예: <code>/item/99999</code>)를 입력하면 어떤 예외가 나오는지 확인했습니다. (<code>EntityNotFoundException</code>)</label>
+<label class="task"><input type="checkbox"> <code>getItemDtl</code> 에 <code>@Transactional(readOnly = true)</code> 이 붙은 이유를 한 문장으로 적었습니다. (조회만 하므로 변경 감지를 하지 않아 빠름)</label>
+
+<h2>4. 흐름 C · 회원가입</h2>
+<p class="muted">담당 예시: 팀원 3. 회원가입 폼을 제출해서 계정이 DB 에 저장되는 흐름입니다.</p>
+<ol>
+  <li><code>GET /members/new</code> → <b>MemberController.memberForm</b> → <code>member/memberForm.html</code></li>
+  <li><code>POST /members/new</code> → <b>MemberController.newMember</b>. 입력값이 잘못되면 <code>member/memberForm</code> 으로 되돌아갑니다.</li>
+  <li><code>Member.createMember(...)</code> 로 엔티티를 만들고, 비밀번호는 암호화합니다.</li>
+  <li><b>MemberService.saveMember</b> 가 같은 이메일이 있는지 확인한 뒤 저장합니다. 중복이면 예외가 나고 화면에 메시지가 나옵니다.</li>
+</ol>
+<h3>C-1. 과제</h3>
+<label class="task"><input type="checkbox"> 같은 이메일로 두 번 가입해서 중복 메시지가 나오는 것을 확인했습니다.</label>
+<label class="task"><input type="checkbox"> 비밀번호가 DB 에 평문으로 저장되지 않는 이유를 설명할 수 있습니다. (<code>passwordEncoder</code> 로 암호화)</label>
+
+<h2>5. 흐름 D · 장바구니와 주문</h2>
+<p class="muted">로그인한 뒤에 할 수 있습니다. 이 흐름은 화면 대신 <b>JSON</b>(데이터 묶음)으로 주고받습니다.</p>
+<ol>
+  <li><b>장바구니 담기</b>: 브라우저의 자바스크립트가 <code>POST /cart</code> 로 상품 번호와 수량을 JSON 으로 보냅니다. <b>CartController.order</b> 가 받아 <b>CartService.addCart</b> 를 호출하고, 이미 담긴 상품이면 수량만 늘립니다.</li>
+  <li><b>장바구니 보기</b>: <code>GET /cart</code> → <b>CartController</b> → <b>CartService.getCartList</b> → <code>cart/cartList.html</code></li>
+  <li><b>주문하기</b>: <code>POST /order</code> 가 JSON 을 받으면 <b>OrderController.order</b> 가 처리하고, <b>OrderService</b> 가 주문과 주문 상품을 저장하면서 재고를 줄입니다. 재고가 모자라면 <code>OutOfStockException</code> 이 나옵니다.</li>
+</ol>
+<h3>D-1. 과제</h3>
+<label class="task"><input type="checkbox"> 같은 상품을 두 번 담았을 때 장바구니 행이 하나이고 수량이 늘어나는 것을 확인했습니다.</label>
+<label class="task"><input type="checkbox"> 재고보다 많이 주문했을 때 에러가 나는지 확인했습니다.</label>
+
+<h2>6. 완성 확인 체크리스트</h2>
+<p>모든 팀원이 아래를 확인하면 이 자습서를 완성한 것입니다.</p>
+<label class="task"><input type="checkbox"> <code>http://localhost:8081</code> 메인 화면이 열립니다.</label>
+<label class="task"><input type="checkbox"> 회원가입 후 로그인할 수 있습니다.</label>
+<label class="task"><input type="checkbox"> 관리자 계정으로 상품을 등록하면 메인 화면에 보입니다.</label>
+<label class="task"><input type="checkbox"><code>shop-uploads/item</code> 폴더에 사진 파일이 생겼습니다.</label>
+<label class="task"><input type="checkbox">상품을 눌러 상세 화면이 열립니다.</label>
+<label class="task"><input type="checkbox">장바구니에 담고, 주문까지 되고, 재고가 줄었습니다.</label>
+<label class="task"><input type="checkbox">테스트 <code>./gradlew test</code> 가 25개 모두 통과합니다.</label>
+
+<h2>7. 자주 막히는 곳</h2>
+<table>
+  <tr><th>증상</th><th>원인</th><th>해결</th></tr>
+  <tr><td>상품 등록 때 <code>FileNotFoundException</code></td><td>앱을 프로젝트 폴더 밖에서 실행했거나, 프로젝트 폴더에 쓰기 권한이 없음</td><td>IntelliJ 에서 shop 프로젝트 폴더를 열고 실행</td></tr>
+  <tr><td>상품 등록 후 메인에 사진이 안 보임</td><td>브라우저 캐시 또는 사진 파일이 없음</td><td><code>shop-uploads/item</code> 에 파일이 있는지 확인 후 새로고침</td></tr>
+  <tr><td>회원가입이 되지 않음</td><td>이메일 중복 또는 입력 형식 오류</td><td>화면의 빨간 메시지 확인</td></tr>
+  <tr><td>장바구니 담기 버튼이 반응하지 않음</td><td>로그인하지 않음</td><td>먼저 로그인</td></tr>
+  <tr><td><code>Communications link failure</code></td><td>MySQL 이 꺼져 있음</td><td>MySQL 서비스를 켜고 다시 실행</td></tr>
+</table>
+
+<h2>8. 팀 역할 나누기</h2>
+<table>
+  <tr><th>역할</th><th>맡는 흐름</th><th>끝내면 할 일</th></tr>
+  <tr><td>팀장</td><td>흐름 A (상품 등록) 과 전체 점검</td><td>체크리스트 전체 확인, PR 리뷰</td></tr>
+  <tr><td>팀원 1</td><td>흐름 B (상품 상세)</td><td>상세 화면과 없는 상품 처리 확인</td></tr>
+  <tr><td>팀원 2</td><td>흐름 C (회원가입)</td><td>중복 가입과 암호화 확인</td></tr>
+  <tr><td>팀원 3</td><td>흐름 D (장바구니·주문)</td><td>담기·주문·재고 확인</td></tr>
+</table>
+<p class="muted">팀원은 각자 브랜치를 만들어 작업하고, 끝나면 PR 을 올립니다. 기존 자습서 7~10장의 푸시·PR·충돌 해결 방법을 따릅니다.</p>
+
+</main>
+</body>
+</html>
