@@ -302,14 +302,13 @@ git config --global init.defaultBranch main</pre></div>
 </ol>
 <div class="codebox"><div class="bar"><span class="fname">shop.sql</span><button class="copy">복사</button></div><pre>CREATE DATABASE IF NOT EXISTS shop CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;</pre></div>
 <ol class="steps" start="2">
-<li><b>Windows 만 해당:</b> 상품 사진을 저장하는 폴더 <code>C:\shop\item</code> 을 만듭니다. 프로젝트의 <code>application.properties</code> 에 <code>itemImgLocation=C:/shop/item</code> 이라고 적혀 있어서, 이 폴더가 없으면 상품 등록 때 오류가 납니다.</li>
+<li>상품 사진을 저장하는 폴더는 <b>직접 만들 필요가 없습니다.</b> 프로젝트 안 <code>shop-uploads/item</code> 폴더가 상품 등록 때 자동으로 만들어집니다. 어느 운영체제(Windows, macOS, Linux)에서나 같습니다. 저장된 사진은 이 폴더 안에 생깁니다.</li>
 </ol>
-<div class="codebox"><div class="bar"><span class="fname">명령 프롬프트</span><button class="copy">복사</button></div><pre>mkdir C:\shop\item</pre></div>
 <div class="warn"><b>주의</b> 테스트(<code>./gradlew test</code>)는 이 폴더를 쓰지 않습니다. 테스트 전용 설정 <code>application-test.properties</code> 에서 OS 임시 폴더를 쓰도록 바꿔 두었기 때문입니다. 그래서 GitHub Actions(리눅스)에서도 테스트가 통과합니다.</div>
 
 <h3>미션 체크</h3>
 <label class="do"><input type="checkbox" data-mission="s2-1"><span class="do-text"><code>shop</code> 데이터베이스가 존재합니다.</span></label>
-<label class="do"><input type="checkbox" data-mission="s2-2"><span class="do-text">Windows 라면 <code>C:\shop\item</code> 폴더를 만들었습니다.</span></label>
+<label class="do"><input type="checkbox" data-mission="s2-2"><span class="do-text">Windows 든 macOS 든 <b>폴더를 따로 만들지 않아도 됩니다.</b> (상품 등록 후 <code>shop-uploads/item</code> 이 생기는지는 12장에서 확인합니다.)</span></label>
 </section>
 
 <section class="lesson" id="s3" data-title="3. IntelliJ 첫 설정">
@@ -887,7 +886,7 @@ gradlew.bat test
 
 <h3>12-2. 상품 등록 · 상품 관리 (관리자 기능)</h3>
 <label class="do"><input type="checkbox" data-mission="s12-4"><span class="do-text">상단 <b>상품 등록</b> 에서 상품명, 판매상태, 가격, 재고, 상세 내용, 상품 이미지(1장 이상)를 넣고 <b>저장</b>을 누르면 메인에 상품이 보입니다.</span></label>
-<label class="do"><input type="checkbox" data-mission="s12-5"><span class="do-text">Windows 라면 <code>C:\shop\item</code> 폴더에 업로드한 이미지 파일이 생겼습니다. (Linux·macOS 는 설정한 경로 확인)</span></label>
+<label class="do"><input type="checkbox" data-mission="s12-5"><span class="do-text">프로젝트 안 <code>shop-uploads/item</code> 폴더에 업로드한 이미지 파일이 생겼습니다.</span></label>
 <label class="do"><input type="checkbox" data-mission="s12-6"><span class="do-text"><b>상품 관리</b> 에서 상품을 눌러 상세를 열고, 가격 등을 바꾸고 <b>수정</b>을 눌러 반영되는지 확인합니다.</span></label>
 
 <h3>12-3. 장바구니 · 주문 · 구매이력</h3>
@@ -1091,7 +1090,7 @@ dependencies {
 <tr><td>한글 주석·문자열이 <code>???</code> 또는 깨짐</td><td>인코딩이 UTF-8 이 아님</td><td>3-3 설정 확인 후 파일을 다시 열기. Windows 명령 창은 <code>chcp 65001</code></td></tr>
 <tr><td><code>Communications link failure</code> (DB 연결 실패)</td><td>MySQL 이 꺼져 있거나 3306 포트가 다름</td><td>Docker 면 <code>docker start shop-mysql</code>. 설치판이면 MySQL 서비스 시작. 비밀번호가 0000 인지 확인</td></tr>
 <tr><td>테스트에서 <code>No such file or directory … C:/shop/item</code></td><td>이 저장소의 테스트는 수정돼 있음. 예전 zip 을 썼을 가능성</td><td><code>application-test.properties</code> 의 <code>itemImgLocation=${java.io.tmpdir}</code> 줄이 있는지 확인</td></tr>
-<tr><td>상품 등록 때 파일 저장 오류 (Windows)</td><td><code>C:\shop\item</code> 폴더가 없음</td><td>2장의 <code>mkdir C:\shop\item</code> 실행</td></tr>
+<tr><td>상품 등록 때 파일 저장 오류 (<code>FileNotFoundException</code>)</td><td>앱을 프로젝트 폴더 밖에서 실행했거나, 프로젝트 폴더에 쓰기 권한이 없음</td><td>IntelliJ 에서 shop 프로젝트 폴더를 열고 실행. 저장 폴더 <code>shop-uploads/item</code> 은 자동으로 만들어짐</td></tr>
 <tr><td><code>Port 8081 was already in use</code></td><td>이전 실행이 아직 켜져 있음</td><td>Run 창의 ■ 로 중지. 또는 작업 관리자에서 java 프로세스 종료</td></tr>
 <tr><td><code>Cannot find a Java installation matching … 25</code> (JDK 를 못 찾음)</td><td>PC 에 JDK 25 가 없음 (build.gradle 의 toolchain 이 25 를 요구)</td><td>IntelliJ 의 <b>Download JDK…</b> 에서 Amazon Corretto 25 설치 후 Gradle JVM 을 25 로 지정</td></tr>
 <tr><td><code>ExceptionInInitializerError</code> / <code>TypeTag :: UNKNOWN</code> (컴파일 중)</td><td>Spring Boot 기본 Lombok(1.18.34)이 JDK 25 의 컴파일러 내부와 맞지 않음</td><td>build.gradle 의 Lombok 을 <b>1.18.48</b> 로 고정 (4곳 모두)</td></tr>
@@ -1345,7 +1344,7 @@ dependencies {
           desc: ['상품 엔티티를 저장한 뒤, 사진 한 장마다 saveItemImg 를 호출합니다.'],
           code: 'itemRepository.save(item);\n// 사진마다\nitemImgService.saveItemImg(itemImg, itemImgFile);' },
         { phase: '요청', title: '사진 파일을 디스크에 씁니다', file: 'service/ItemImgService.java', active: [4], move: [4, 5], dir: 'req',
-          desc: ['FileService.uploadFile 이 UUID 이름으로 itemImgLocation 폴더(Windows: C:/shop/item)에 파일을 씁니다.', '그 다음 파일 이름을 ItemImg 에 담습니다.'],
+          desc: ['FileService.uploadFile 이 UUID 이름으로 itemImgLocation 폴더(프로젝트 안 ./shop-uploads/item)에 파일을 씁니다.', '그 다음 파일 이름을 ItemImg 에 담습니다.'],
           code: 'String oriImgName = itemImgFile.getOriginalFilename();\nimgName = fileService.uploadFile(itemImgLocation, oriImgName, itemImgFile.getBytes());' },
         { phase: '저장', title: 'item_img 행을 저장합니다', file: 'repository/ItemImgRepository.java', active: [5, 6], move: [5, 6], dir: 'req',
           desc: ['itemImgRepository.save(itemImg) 가 item_img 테이블에 한 줄을 넣습니다.'],

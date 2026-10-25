@@ -72,6 +72,9 @@ public class FileService {
         // FileOutputStream: 데이터를 파일로 "흘려보내는" 파이프(통로)
         // 비유: 사진 보관함 서랍을 열고(FileOutputStream 생성),
         //       사진을 넣고(write), 서랍을 닫는(close) 과정입니다.
+        // 저장 폴더가 아직 없으면 만듭니다. (Windows 의 C:/shop 과 달리, 프로젝트 안 ./shop-uploads 폴더는 처음에 없습니다)
+        new File(uploadPath).mkdirs();
+
         FileOutputStream fos = new FileOutputStream(fileUploadFullUrl);
 
         fos.write(fileData);   // 파일 데이터(사진)를 서버 폴더에 기록합니다
