@@ -322,6 +322,14 @@ git config --global init.defaultBranch main</pre></div>
 <li>Welcome 화면에서 <b>Plugins</b> 를 누르고 <b>Lombok</b> 이 설치되어 있는지 확인합니다. 최신 IntelliJ 에는 기본으로 들어 있으니 이미 보이면 넘어갑니다.</li>
 </ol>
 
+<h3>3-1-b. 처음 실행할 때 나오는 화면 (IntelliJ 2026.2.3 에서 확인한 순서)</h3>
+<ol class="steps">
+<li><b>JetBrains Open-Source Build Terms</b>(사용 약관) 창이 뜨면 <b>I confirm that I have read and accept the terms of this User Agreement</b> 를 체크하고 <b>Continue</b> 를 누릅니다.</li>
+<li><b>DATA SHARING</b> 창이 뜨면 <b>Don't Send</b> 를 누릅니다. (개인 정보가 전송되지 않습니다)</li>
+<li><b>Welcome to IntelliJ IDEA</b> 화면이 나오면 준비 완료입니다. 이 화면의 버튼은 <b>New Project</b>(새 프로젝트), <b>Open</b>(폴더 열기), <b>Clone Repository</b>(GitHub 저장소 내려받기)입니다.</li>
+</ol>
+<div class="tip">화면 오른쪽 위 제목 아래에 <b>2026.2.3</b> 이 보이면 이 자습서와 같은 버전입니다.</div>
+
 <h3>3-2. 설정 창 열기 (Ctrl+Alt+S, Mac 은 ⌘,)</h3>
 <ol class="steps">
 <li><b>Build, Execution, Deployment → Build Tools → Gradle</b> 로 이동합니다.</li>
@@ -661,7 +669,7 @@ gradlew.bat test
 
 <h3>9-1. ① 클론 (Clone) · 팀원이 각자 한 번만</h3>
 <ol class="steps">
-<li>IntelliJ 시작 화면에서 <b>Get from Version Control</b> (메뉴: <b>File → New → Project from Version Control</b>) 를 누릅니다.</li>
+<li>IntelliJ 시작 화면(Welcome)에서 <b>Clone Repository</b> (메뉴: <b>File → New → Project from Version Control</b>) 를 누릅니다.</li>
 <li><b>URL</b> 에 팀장이 만든 저장소 주소(<code>https://github.com/팀장아이디/shop-team.git</code>)를 넣고, <b>Directory</b> 에 저장할 폴더를 고른 뒤 <b>Clone</b> 을 누릅니다.</li>
 <li>GitHub 로그인 창이 뜨면 본인 계정으로 로그인합니다. (비밀번호 대신 브라우저 인증 방식을 쓰는 것이 편합니다)</li>
 <li>Trust Project → Gradle 가져오기가 끝날 때까지 기다립니다. 3장의 설정(JDK 25, UTF-8)이 적용되어 있는지 다시 봅니다.</li>
