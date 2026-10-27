@@ -13,5 +13,9 @@
 - 실행: `./gradlew bootRun` (Windows: `gradlew.bat bootRun`), 주소 http://localhost:8081
 - 테스트: `./gradlew test` (MySQL 8.0, `localhost:3306`, root/0000, DB `shop` 필요)
 - 자동 검사: `.github/workflows/shop-ci.yml` (PR 과 main push 마다 `./gradlew test`)
-- 단계별 자습서: [docs/shop-tutorial.html](docs/shop-tutorial.html) (IntelliJ, Git, GitHub, GitHub Actions 팀 프로젝트)
+- 처음부터 완성 자습서 (한 파일): [docs/shop-tutorial.html](docs/shop-tutorial.html)
+  - start.spring.io 로 빈 프로젝트를 만들고, 요청·응답 흐름 순서(공통 → 회원 → 상품 → 메인 → 주문 → 장바구니 → 테스트)대로 파일 95개를 복사 버튼으로 만들어 완성합니다.
+  - IntelliJ 설정, GitHub · GitHub Actions, 팀(팀장 1 · 팀원 3) 작업 순서, 문제 해결 표가 함께 들어 있습니다.
+  - 예제 상품 사진: [docs/sample-images.zip](docs/sample-images.zip)
+- 알려진 제한: Spring Boot 3.3.2 의 Gradle 플러그인은 Gradle 9 에서 `bootJar`(실행 jar 만들기)가 실패합니다. 컴파일 · 테스트 · 실행(`bootRun`)에는 영향이 없습니다. 배포용 jar 가 필요하면 Spring Boot 3.4 이상이 필요합니다.
 - 강사 변경 이력(원본 README): [docs/shop-changelog.md](docs/shop-changelog.md)
